@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCheckCircle, FaEdit } from 'react-icons/fa';
-import { createOrder } from '../services/api';
+import { createOrder, getUserById } from '../services/api';
 
 function Checkout({ cart, user, clearCart }) {
   const navigate = useNavigate();
@@ -21,19 +21,28 @@ function Checkout({ cart, user, clearCart }) {
   const [orderNumber, setOrderNumber] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  // Auto-fill form dengan data user saat component mount atau user berubah
+  // Fetch user data by ID
   useEffect(() => {
-    if (user) {
-      setFormData(prev => ({
-        ...prev,
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        address: user.address || '',
-        city: user.city || '',
-        postalCode: user.postalCode || '',
-      }));
-    }
+    const fetchUserData = async () => {
+      if (user?.id) {
+        try {
+          const userData = await getUserById(user.id);
+          setFormData((prev) => ({
+            ...prev,
+            name: userData.name || '',
+            email: userData.email || '',
+            phone: userData.phone || '',
+            address: userData.address || '',
+            city: userData.city || '',
+            postalCode: userData.postalCode || '',
+          }));
+        } catch (error) {
+          console.error('Gagal mengambil data user:', error);
+        }
+      }
+    };
+
+    fetchUserData();
   }, [user]);
 
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -138,10 +147,8 @@ function Checkout({ cart, user, clearCart }) {
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Checkout</h1>
       <div className="grid md:grid-cols-3 gap-8">
-        {/* Form */}
         <div className="md:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Header untuk informasi pengiriman */}
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Informasi Pengiriman</h2>
               {user && (
@@ -156,7 +163,6 @@ function Checkout({ cart, user, clearCart }) {
               )}
             </div>
 
-            {/* Status informasi untuk user yang login */}
             {user && !isEditingProfile && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <p className="text-green-800 text-sm">
@@ -166,12 +172,9 @@ function Checkout({ cart, user, clearCart }) {
               </div>
             )}
 
-            {/* Form fields - disabled jika user login dan tidak sedang edit */}
-            {[
-              { label: 'Nama Lengkap', name: 'name', type: 'text' },
+            {[{ label: 'Nama Lengkap', name: 'name', type: 'text' },
               { label: 'Email', name: 'email', type: 'email' },
-              { label: 'Nomor Telepon', name: 'phone', type: 'tel' },
-            ].map(({ label, name, type }) => (
+              { label: 'Nomor Telepon', name: 'phone', type: 'tel' }].map(({ label, name, type }) => (
               <div key={name}>
                 <label htmlFor={name} className="block font-medium mb-1">{label}</label>
                 <input
@@ -181,9 +184,7 @@ function Checkout({ cart, user, clearCart }) {
                   value={formData[name]}
                   onChange={handleChange}
                   disabled={user && !isEditingProfile}
-                  className={`w-full border rounded px-3 py-2 ${
-                    errors[name] ? 'border-red-500' : 'border-gray-300'
-                  } ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full border rounded px-3 py-2 ${errors[name] ? 'border-red-500' : 'border-gray-300'} ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
                 {errors[name] && <p className="text-sm text-red-500 mt-1">{errors[name]}</p>}
               </div>
@@ -197,31 +198,24 @@ function Checkout({ cart, user, clearCart }) {
                 value={formData.address}
                 onChange={handleChange}
                 disabled={user && !isEditingProfile}
-                className={`w-full border rounded px-3 py-2 ${
-                  errors.address ? 'border-red-500' : 'border-gray-300'
-                } ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`w-full border rounded px-3 py-2 ${errors.address ? 'border-red-500' : 'border-gray-300'} ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 rows="3"
               />
               {errors.address && <p className="text-sm text-red-500 mt-1">{errors.address}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { label: 'Kota', name: 'city', type: 'text' },
-                { label: 'Kode Pos', name: 'postalCode', type: 'text' },
-              ].map(({ label, name, type }) => (
+              {[{ label: 'Kota', name: 'city' }, { label: 'Kode Pos', name: 'postalCode' }].map(({ label, name }) => (
                 <div key={name}>
                   <label htmlFor={name} className="block font-medium mb-1">{label}</label>
                   <input
                     id={name}
                     name={name}
-                    type={type}
+                    type="text"
                     value={formData[name]}
                     onChange={handleChange}
                     disabled={user && !isEditingProfile}
-                    className={`w-full border rounded px-3 py-2 ${
-                      errors[name] ? 'border-red-500' : 'border-gray-300'
-                    } ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`w-full border rounded px-3 py-2 ${errors[name] ? 'border-red-500' : 'border-gray-300'} ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   />
                   {errors[name] && <p className="text-sm text-red-500 mt-1">{errors[name]}</p>}
                 </div>
@@ -230,11 +224,9 @@ function Checkout({ cart, user, clearCart }) {
 
             <h2 className="text-xl font-semibold mt-6 mb-2">Metode Pembayaran</h2>
             <div className="space-y-2">
-              {[
-                { id: 'transfer', label: 'Transfer Bank' },
+              {[{ id: 'transfer', label: 'Transfer Bank' },
                 { id: 'cod', label: 'Bayar di Tempat (COD)' },
-                { id: 'ewallet', label: 'E-Wallet' },
-              ].map(({ id, label }) => (
+                { id: 'ewallet', label: 'E-Wallet' }].map(({ id, label }) => (
                 <div key={id} className="flex items-center">
                   <input
                     type="radio"
@@ -260,7 +252,6 @@ function Checkout({ cart, user, clearCart }) {
           </form>
         </div>
 
-        {/* Order Summary */}
         <div className="bg-gray-50 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Ringkasan Pesanan</h2>
           <div className="space-y-4">

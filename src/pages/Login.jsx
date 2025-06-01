@@ -30,26 +30,32 @@ function Login({ onLogin }) {
     return newErrors;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formErrors = validateForm();
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return;
-    }
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  const formErrors = validateForm();
+  if (Object.keys(formErrors).length > 0) {
+    setErrors(formErrors);
+    return;
+  }
 
-    try {
-      setIsSubmitting(true);
-      const userData = await loginApi(formData.email, formData.password);
-      onLogin(userData);
-      navigate('/');
-    } catch (error) {
-      console.error('Login error:', error);
-      setLoginError('Email atau password salah. Silakan coba lagi.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  try {
+    setIsSubmitting(true);
+    const userData = await loginApi(formData.email, formData.password);
+
+    // ✅ Simpan id dan token ke localStorage
+    localStorage.setItem('userId', userData.id);
+    localStorage.setItem('token', userData.token);
+
+    onLogin(userData); // Opsional, tergantung kamu pakai context atau tidak
+    navigate('/');
+  } catch (error) {
+    console.error('Login error:', error);
+    setLoginError('Email atau password salah. Silakan coba lagi.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
   <div className="login-page flex flex-col md:flex-row items-center justify-center min-h-screen bg-gray-100 px-6 md:px-12 gap-6">
