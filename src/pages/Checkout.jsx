@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaEdit } from 'react-icons/fa';
 import { createOrder } from '../services/api';
 
 function Checkout({ cart, user, clearCart }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: user ? user.name : '',
-    email: user ? user.email : '',
+    name: '',
+    email: '',
     phone: '',
     address: '',
     city: '',
@@ -19,6 +19,22 @@ function Checkout({ cart, user, clearCart }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  // Auto-fill form dengan data user saat component mount atau user berubah
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        postalCode: user.postalCode || '',
+      }));
+    }
+  }, [user]);
 
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
@@ -125,7 +141,32 @@ function Checkout({ cart, user, clearCart }) {
         {/* Form */}
         <div className="md:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-xl font-semibold mb-2">Informasi Pengiriman</h2>
+            {/* Header untuk informasi pengiriman */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Informasi Pengiriman</h2>
+              {user && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProfile(!isEditingProfile)}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
+                >
+                  <FaEdit />
+                  {isEditingProfile ? 'Selesai Edit' : 'Edit Data'}
+                </button>
+              )}
+            </div>
+
+            {/* Status informasi untuk user yang login */}
+            {user && !isEditingProfile && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <p className="text-green-800 text-sm">
+                  ✓ Data pengiriman telah diisi otomatis dari profil Anda. 
+                  Klik "Edit Data" jika ingin mengubah informasi.
+                </p>
+              </div>
+            )}
+
+            {/* Form fields - disabled jika user login dan tidak sedang edit */}
             {[
               { label: 'Nama Lengkap', name: 'name', type: 'text' },
               { label: 'Email', name: 'email', type: 'email' },
@@ -139,7 +180,10 @@ function Checkout({ cart, user, clearCart }) {
                   type={type}
                   value={formData[name]}
                   onChange={handleChange}
-                  className={`w-full border rounded px-3 py-2 ${errors[name] ? 'border-red-500' : 'border-gray-300'}`}
+                  disabled={user && !isEditingProfile}
+                  className={`w-full border rounded px-3 py-2 ${
+                    errors[name] ? 'border-red-500' : 'border-gray-300'
+                  } ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
                 {errors[name] && <p className="text-sm text-red-500 mt-1">{errors[name]}</p>}
               </div>
@@ -152,7 +196,11 @@ function Checkout({ cart, user, clearCart }) {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className={`w-full border rounded px-3 py-2 ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
+                disabled={user && !isEditingProfile}
+                className={`w-full border rounded px-3 py-2 ${
+                  errors.address ? 'border-red-500' : 'border-gray-300'
+                } ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                rows="3"
               />
               {errors.address && <p className="text-sm text-red-500 mt-1">{errors.address}</p>}
             </div>
@@ -170,7 +218,10 @@ function Checkout({ cart, user, clearCart }) {
                     type={type}
                     value={formData[name]}
                     onChange={handleChange}
-                    className={`w-full border rounded px-3 py-2 ${errors[name] ? 'border-red-500' : 'border-gray-300'}`}
+                    disabled={user && !isEditingProfile}
+                    className={`w-full border rounded px-3 py-2 ${
+                      errors[name] ? 'border-red-500' : 'border-gray-300'
+                    } ${user && !isEditingProfile ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   />
                   {errors[name] && <p className="text-sm text-red-500 mt-1">{errors[name]}</p>}
                 </div>
@@ -202,7 +253,7 @@ function Checkout({ cart, user, clearCart }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mt-4"
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mt-4 disabled:bg-gray-400"
             >
               {isSubmitting ? 'Memproses...' : 'Proses Pesanan'}
             </button>
