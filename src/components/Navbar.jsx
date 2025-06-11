@@ -13,7 +13,6 @@ function Navbar({ cartItemCount, user, onLogout }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // cek dropdown mana yang aktif lalu tutup jika klik di luar
       if (user) {
         if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
           setIsDropdownOpen(false);
