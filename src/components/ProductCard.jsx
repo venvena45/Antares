@@ -2,7 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaCartPlus } from 'react-icons/fa';
 
-function ProductCard({ product, addToCart }) {
+function ProductCard({ product, addToCart, user }) {
+  const handleAddToCart = () => {
+    if (!user) {
+      alert('Silakan login terlebih dahulu untuk menambahkan ke keranjang.');
+      return;
+    }
+    addToCart(product);
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden transition-transform hover:scale-105">
       <img 
@@ -25,7 +33,7 @@ function ProductCard({ product, addToCart }) {
           </Link>
           <button 
             className="flex items-center gap-1 text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg transition" 
-            onClick={() => addToCart(product)}
+            onClick={handleAddToCart}
           >
             <FaCartPlus /> Tambah
           </button>

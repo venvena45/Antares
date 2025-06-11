@@ -36,14 +36,17 @@ function Navbar({ cartItemCount, user, onLogout }) {
       <div className="flex items-center gap-6 relative">
         <Link to="/" className="text-white font-medium hover:text-[#F4631E] transition">Home</Link>
         <Link to="/products" className="text-white font-medium hover:text-[#F4631E] transition">Produk</Link>
-        <Link to="/cart" className="relative text-white hover:text-[#F4631E] transition">
-          <FaShoppingCart size={20} />
-          {cartItemCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 text-xs rounded-full flex items-center justify-center">
-              {cartItemCount}
-            </span>
-          )}
-        </Link>
+
+        {user && (
+          <Link to="/cart" className="relative text-white hover:text-[#F4631E] transition">
+            <FaShoppingCart size={20} />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white w-5 h-5 text-xs rounded-full flex items-center justify-center">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
+        )}
 
         {user ? (
           <div className="relative" ref={userDropdownRef}>

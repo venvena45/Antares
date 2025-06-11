@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { getMedicines } from '../services/api';
 
-function ProductList({ addToCart }) {
+function ProductList({ addToCart, user }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
@@ -59,7 +59,6 @@ function ProductList({ addToCart }) {
     });
 
   useEffect(() => {
-    // Tutup filter popup kalau klik di luar popup
     const handleClickOutside = (event) => {
       if (filterRef.current && !filterRef.current.contains(event.target)) {
         setShowFilter(false);
@@ -81,9 +80,7 @@ function ProductList({ addToCart }) {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-semibold mb-6">Daftar Produk</h1>
 
-      {/* Filter button dan search bar sejajar */}
       <div className="flex items-center gap-3 mb-6">
-        {/* Tombol Filter */}
         <div className="relative">
           <button
             onClick={() => setShowFilter((prev) => !prev)}
@@ -129,7 +126,6 @@ function ProductList({ addToCart }) {
           )}
         </div>
 
-        {/* Search Bar penuh sisa lebar */}
         <div className="relative flex-1">
           <input
             type="text"
@@ -147,7 +143,6 @@ function ProductList({ addToCart }) {
         </div>
       </div>
 
-      {/* Produk */}
       {loading ? (
         <div className="text-center text-gray-500">Loading...</div>
       ) : filteredProducts.length === 0 ? (
@@ -155,7 +150,12 @@ function ProductList({ addToCart }) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} addToCart={addToCart} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              addToCart={addToCart}
+              user={user} // ✅ diteruskan ke ProductCard
+            />
           ))}
         </div>
       )}

@@ -39,12 +39,12 @@ function App({ pathname, user, login, logout, setUser }) {
       setCart(
         cart.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + product.quantity }
             : item
         )
       );
     } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+      setCart([...cart, { ...product, quantity: product.quantity }]);
     }
   };
 
@@ -97,29 +97,44 @@ function App({ pathname, user, login, logout, setUser }) {
       <main className="flex-grow container mx-auto px-4 py-6">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/products" element={<ProductList addToCart={addToCart} />} />
-          <Route path="/products/:id" element={<ProductDetail addToCart={addToCart} />} />
-          <Route path="/cart" element={
-            <Cart
-              cart={cart}
-              updateQuantity={updateQuantity}
-              removeFromCart={removeFromCart}
-            />
-          } />
-          <Route path="/checkout" element={
-            <Checkout cart={cart} user={user} clearCart={clearCart} />
-          } />
+          <Route
+            path="/products"
+            element={<ProductList addToCart={addToCart} user={user} />}
+          />
+          <Route
+            path="/products/:id"
+            element={<ProductDetail addToCart={addToCart} user={user} />}
+          />
+          <Route
+            path="/cart"
+            element={
+              <Cart
+                cart={cart}
+                updateQuantity={updateQuantity}
+                removeFromCart={removeFromCart}
+              />
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <Checkout cart={cart} user={user} clearCart={clearCart} />
+            }
+          />
           <Route path="/login" element={<Login onLogin={login} />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={
-            <Profile
-              user={user}
-              onUpdate={(updatedUserData) => {
-                setUser(updatedUserData);
-                localStorage.setItem("user", JSON.stringify(updatedUserData));
-              }}
-            />
-          } />
+          <Route
+            path="/profile"
+            element={
+              <Profile
+                user={user}
+                onUpdate={(updatedUserData) => {
+                  setUser(updatedUserData);
+                  localStorage.setItem("user", JSON.stringify(updatedUserData));
+                }}
+              />
+            }
+          />
         </Routes>
       </main>
       <Footer />

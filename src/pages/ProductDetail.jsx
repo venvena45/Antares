@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getMedicineById } from '../services/api';
 import { FaCartPlus, FaArrowLeft } from 'react-icons/fa';
 
-function ProductDetail({ addToCart }) {
+function ProductDetail({ addToCart, user }) {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +26,11 @@ function ProductDetail({ addToCart }) {
   }, [id]);
 
   const handleAddToCart = () => {
+    if (!user) {
+      alert('Silakan login terlebih dahulu untuk menambahkan ke keranjang.');
+      return;
+    }
+
     if (product) {
       const productWithQuantity = { ...product, quantity };
       addToCart(productWithQuantity);
@@ -97,7 +102,9 @@ function ProductDetail({ addToCart }) {
                 min="1"
                 max={product.stock}
                 value={quantity}
-                onChange={(e) => setQuantity(Math.min(product.stock, Math.max(1, parseInt(e.target.value) || 1)))}
+                onChange={(e) =>
+                  setQuantity(Math.min(product.stock, Math.max(1, parseInt(e.target.value) || 1)))
+                }
                 disabled={product.stock <= 0}
                 className="w-16 text-center border-x px-2 py-1"
               />
