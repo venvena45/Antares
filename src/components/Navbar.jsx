@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaUser } from 'react-icons/fa';
 
 function Navbar({ cartItemCount, user, onLogout }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const userDropdownRef = useRef(null);
   const guestDropdownRef = useRef(null);
+  const navigate = useNavigate(); // digunakan untuk redirect
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
@@ -73,7 +74,8 @@ function Navbar({ cartItemCount, user, onLogout }) {
                 <button
                   onClick={() => {
                     setIsDropdownOpen(false);
-                    onLogout();
+                    onLogout();      // logout user
+                    navigate('/');  // redirect ke halaman awal
                   }}
                   className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
                 >
