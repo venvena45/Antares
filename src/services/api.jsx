@@ -1,32 +1,9 @@
 import axios from "axios";
 
-const DELAY = 800; // Simulasi network delay
-
-// Gunakan ENV untuk API backend (Vite env variable)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Data dummy untuk obat-obatan
-const medicines = [
-  // ... (data medicines kamu tetap sama)
-];
-
-// User dan order mock data
-let users = [
-  { id: 1, name: "User Test", email: "user@test.com", password: "password123" },
-];
-
-let orders = [];
-let orderCounter = 1;
-
-const delay = (ms = DELAY) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// ====================
-// === BACKEND API ====
-// ====================
-
-// ✅ Register ke backend
+// === Register ke backend ===
 export const register = async (name, email, password, alamat, no_telepon) => {
-  console.log("Terpencet");
   try {
     const response = await axios.post(`${API_BASE_URL}/auth/register`, {
       nama: name,
@@ -42,26 +19,91 @@ export const register = async (name, email, password, alamat, no_telepon) => {
   }
 };
 
-// ✅ Login ke backend
+// === Login ke backend ===
 export const login = async (email, password) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/auth/login`, {
       email,
       password,
     });
+
+    const { token, user } = response.data;
+
+    if (token && user?.id) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", user.id);
+    }
+
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
   }
 };
 
-// ====================
-// === MOCK APIs ======
-// ====================
+// === Ambil data user berdasarkan ID ===
+export const getUserById = async (userId) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token tidak ditemukan. Harap login ulang.");
 
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gagal mengambil user: ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching user by ID:", error);
+    throw error;
+  }
+};
+
+// === Fungsi bantu: ambil profil user yang sedang login ===
+export const getMyProfile = async () => {
+  const userId = localStorage.getItem("userId");
+  if (!userId) throw new Error("User ID tidak ditemukan. Harap login ulang.");
+  return await getUserById(userId);
+};
+
+// === Update profil user ===
+export const updateUserProfile = async (userId, userData) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token tidak ditemukan. Harap login ulang.");
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gagal update profil: ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    throw error;
+  }
+};
+
+// === Get semua obat ===
 export const getMedicines = async () => {
   const response = await axios.get(`${API_BASE_URL}/obat`);
-  return response.data.map(item => ({
+  return response.data.map((item) => ({
     id: item.obat_id,
     name: item.nama_obat,
     description: item.deskripsi,
@@ -71,13 +113,14 @@ export const getMedicines = async () => {
     stock: item.stok,
     unit: item.satuan,
     image: item.foto,
-    category: '', // Tambahkan jika ada kategori di response
+    category: "", // bisa diisi jika tersedia
   }));
 };
 
-// services/api.js
+// === Get obat berdasarkan ID ===
 export const getMedicineById = async (id) => {
-  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/obat/${id}`);
+  const response = await fetch(`${API_BASE_URL}/obat/${id}`);
+  if (!response.ok) throw new Error("Gagal mengambil data obat");
   const data = await response.json();
 
   return {
@@ -93,81 +136,23 @@ export const getMedicineById = async (id) => {
   };
 };
 
-
-// ⚠️ MOCK REGISTER: fallback jika backend tidak tersedia
-export const mockRegister = async (name, email, password) => {
-  await delay();
-  if (users.some((u) => u.email === email))
-    throw new Error("Email already in use");
-
-  const newUser = { id: users.length + 1, name, email, password };
-  users.push(newUser);
-  const { password: _, ...userData } = newUser;
-  return userData;
-};
+// === Order mock ===
+let orders = [];
+let orderCounter = 1;
 
 export const createOrder = async (orderData) => {
-  await delay();
+  await new Promise((resolve) => setTimeout(resolve, 800)); // Simulasi delay
 
   const newOrder = {
     ...orderData,
-    id: orderCounter,
+    id: orderCounter++,
     orderNumber: `ORD-${Date.now()}`,
     status: "pending",
   };
 
   orders.push(newOrder);
-  orderCounter++;
-
   return {
     success: true,
     orderNumber: newOrder.orderNumber,
   };
-};
-
-export const getUserById = async (userId) => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    throw error;
-  }
-};
-
-export const updateUserProfile = async (userId, userData) => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error updating user:', error);
-    throw error;
-  }
 };

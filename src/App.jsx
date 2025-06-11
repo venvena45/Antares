@@ -6,14 +6,12 @@ import {
   useLocation,
 } from "react-router-dom";
 
-// Components
 import Navbar from "./components/Navbar";
 import HeaderLogin from "./components/HeaderLogin";
 import HeaderRegistrasi from "./components/HeaderRegistrasi";
 import HeaderHome from "./components/HeaderHome";
 import Footer from "./components/Footer";
 
-// Pages
 import Home from "./pages/Home";
 import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
@@ -21,8 +19,9 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile.jsx";
 
-function App({ pathname, user, login, logout }) {
+function App({ pathname, user, login, logout, setUser }) {
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
@@ -70,14 +69,13 @@ function App({ pathname, user, login, logout }) {
     setCart([]);
   };
 
-  // Pilih header sesuai path
   let header;
   if (pathname === "/home") {
-    if (user) {
-      header = <HeaderHome user={user} onLogout={logout} />;
-    } else {
-      header = <Navbar user={user} onLogout={logout} />;
-    }
+    header = user ? (
+      <HeaderHome user={user} onLogout={logout} />
+    ) : (
+      <Navbar user={user} onLogout={logout} />
+    );
   } else if (pathname === "/login") {
     header = <HeaderLogin />;
   } else if (pathname === "/register") {
@@ -99,33 +97,31 @@ function App({ pathname, user, login, logout }) {
       <main className="flex-grow container mx-auto px-4 py-6">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route
-            path="/products"
-            element={<ProductList addToCart={addToCart} />}
-          />
-          <Route
-            path="/products/:id"
-            element={<ProductDetail addToCart={addToCart} />}
-          />
-          <Route
-            path="/cart"
-            element={
-              <Cart
-                cart={cart}
-                updateQuantity={updateQuantity}
-                removeFromCart={removeFromCart}
-              />
-            }
-          />
-          <Route
-            path="/checkout"
-            element={<Checkout cart={cart} user={user} clearCart={clearCart} />}
-          />
+          <Route path="/products" element={<ProductList addToCart={addToCart} />} />
+          <Route path="/products/:id" element={<ProductDetail addToCart={addToCart} />} />
+          <Route path="/cart" element={
+            <Cart
+              cart={cart}
+              updateQuantity={updateQuantity}
+              removeFromCart={removeFromCart}
+            />
+          } />
+          <Route path="/checkout" element={
+            <Checkout cart={cart} user={user} clearCart={clearCart} />
+          } />
           <Route path="/login" element={<Login onLogin={login} />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={
+            <Profile
+              user={user}
+              onUpdate={(updatedUserData) => {
+                setUser(updatedUserData);
+                localStorage.setItem("user", JSON.stringify(updatedUserData));
+              }}
+            />
+          } />
         </Routes>
       </main>
-
       <Footer />
     </div>
   );
@@ -133,7 +129,6 @@ function App({ pathname, user, login, logout }) {
 
 function AppWithRouter() {
   const location = useLocation();
-
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -157,6 +152,7 @@ function AppWithRouter() {
       user={user}
       login={login}
       logout={logout}
+      setUser={setUser}
     />
   );
 }
