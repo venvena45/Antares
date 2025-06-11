@@ -39,12 +39,12 @@ function App({ pathname, user, login, logout, setUser }) {
       setCart(
         cart.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + product.quantity }
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         )
       );
     } else {
-      setCart([...cart, { ...product, quantity: product.quantity }]);
+      setCart([...cart, { ...product, quantity: 1 }]);
     }
   };
 
