@@ -23,7 +23,7 @@ function Profile() {
 
       setLoading(true);
       try {
-        const data = await getUserById(userId);
+        const data = await getUserById(userId, token);
         setFormData({
           nama: data.nama || '',
           email: data.email || '',
@@ -32,7 +32,8 @@ function Profile() {
         });
         setError(null);
       } catch (err) {
-        setError('Gagal mengambil data profil.');
+        console.error('Error:', err);
+        setError(err.message || 'Gagal mengambil data profil.');
       } finally {
         setLoading(false);
       }
@@ -63,10 +64,11 @@ function Profile() {
     }
 
     try {
-      await updateUserProfile(userId, formData);
+      await updateUserProfile(userId, formData, token);
       setIsEditing(false);
       setSuccessMsg('Profil berhasil diperbarui.');
     } catch (err) {
+      console.error(err);
       alert('Gagal memperbarui profil.');
     }
   };
@@ -87,7 +89,9 @@ function Profile() {
       <form className="space-y-4">
         {['nama', 'email', 'alamat', 'no_telepon'].map((field) => (
           <div key={field}>
-            <label className="block font-medium capitalize mb-1">{field.replace('_', ' ')}</label>
+            <label className="block font-medium capitalize mb-1">
+              {field.replace('_', ' ')}
+            </label>
             <input
               type="text"
               name={field}
