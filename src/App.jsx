@@ -11,6 +11,7 @@ import HeaderLogin from "./components/HeaderLogin";
 import HeaderRegistrasi from "./components/HeaderRegistrasi";
 import HeaderHome from "./components/HeaderHome";
 import Footer from "./components/Footer";
+import LoginAlert from "./components/LoginAlert"; 
 
 import Home from "./pages/Home";
 import ProductList from "./pages/ProductList";
@@ -93,6 +94,7 @@ function App({ pathname, user, login, logout, setUser }) {
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 text-gray-800">
       {header}
+      <LoginAlert user={user} /> {/* ✅ Pop-up notif muncul jika belum login */}
 
       <main className="flex-grow container mx-auto px-4 py-6">
         <Routes>
@@ -117,9 +119,7 @@ function App({ pathname, user, login, logout, setUser }) {
           />
           <Route
             path="/checkout"
-            element={
-              <Checkout cart={cart} user={user} clearCart={clearCart} />
-            }
+            element={<Checkout cart={cart} user={user} clearCart={clearCart} />}
           />
           <Route path="/login" element={<Login onLogin={login} />} />
           <Route path="/register" element={<Register />} />
@@ -146,20 +146,72 @@ function AppWithRouter() {
   const location = useLocation();
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
+  const SESSION_TIMEOUT_MINUTES = 2; // ✅ Static timeout variable
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+
+    const userId = userData.user.user_id;
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("token", "session-token");
+    localStorage.setItem("tokenTimestamp", Date.now());
+
+    let jsonString = JSON.stringify(userData, null, 2);
+    jsonString = jsonString
+      .replace(/"user_id":\s*\d+,?\n?/g, "")
+      .replace(/"role":\s*".*?",?\n?/g, "");
+
+    jsonString = jsonString.replace(/,\n\s*}$/, "\n}");
+
+    localStorage.setItem("user", jsonString);
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("tokenTimestamp");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userVisual");
     localStorage.removeItem("user");
   };
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+
+    if (token && tokenTimestamp) {
+      const now = Date.now();
+      const timeoutMs = SESSION_TIMEOUT_MINUTES * 60 * 1000;
+      const elapsed = now - Number(tokenTimestamp);
+
+      if (elapsed < timeoutMs) {
+        if (savedUser) setUser(JSON.parse(savedUser));
+      } else {
+        logout();
+      }
+    } else {
+      logout();
+    }
+  }, []);
+
+  useEffect(() => {
+    const updateActivity = () => {
+      if (localStorage.getItem("token")) {
+        localStorage.setItem("tokenTimestamp", Date.now());
+      }
+    };
+
+    window.addEventListener("click", updateActivity);
+    window.addEventListener("keydown", updateActivity);
+    window.addEventListener("scroll", updateActivity);
+
+    return () => {
+      window.removeEventListener("click", updateActivity);
+      window.removeEventListener("keydown", updateActivity);
+      window.removeEventListener("scroll", updateActivity);
+    };
+  }, []);
 
   return (
     <App

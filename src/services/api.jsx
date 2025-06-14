@@ -46,7 +46,7 @@ export const getUserById = async (userId) => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Token tidak ditemukan. Harap login ulang.");
 
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/auth/users/${userId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -79,7 +79,7 @@ export const updateUserProfile = async (userId, userData) => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Token tidak ditemukan. Harap login ulang.");
 
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/auth/users/${userId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
