@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getMedicineById } from '../services/api';
-import { FaCartPlus, FaArrowLeft } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { getMedicineById } from "../services/api";
+import { FaCartPlus, FaArrowLeft } from "react-icons/fa";
 
 function ProductDetail({ addToCart, user }) {
   const { id } = useParams();
@@ -25,17 +25,21 @@ function ProductDetail({ addToCart, user }) {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
-    if (!user) {
-      alert('Silakan login terlebih dahulu untuk menambahkan ke keranjang.');
-      return;
-    }
+  const handleAddToCart = (obat) => {
+    const itemToCart = {
+      obat_id: obat.obat_id,
+      nama_obat: obat.nama_obat,
+      deskripsi: obat.deskripsi,
+      dosis: obat.dosis,
+      harga_satuan: parseFloat(obat.harga_satuan),
+      harga_grosir: parseFloat(obat.harga_grosir),
+      stok: obat.stok,
+      kategori: obat.kategori,
+      foto: obat.foto,
+      quantity: 1, // tambahan lokal untuk cart
+    };
 
-    if (product) {
-      const productWithQuantity = { ...product, quantity };
-      addToCart(productWithQuantity);
-      setQuantity(1);
-    }
+    addToCart(itemToCart);
   };
 
   if (loading) {
@@ -43,24 +47,37 @@ function ProductDetail({ addToCart, user }) {
   }
 
   if (!product) {
-    return <div className="text-center py-10 text-red-500">Produk tidak ditemukan</div>;
+    return (
+      <div className="text-center py-10 text-red-500">
+        Produk tidak ditemukan
+      </div>
+    );
   }
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <Link to="/products" className="inline-flex items-center text-blue-600 hover:underline mb-4">
+      <Link
+        to="/products"
+        className="inline-flex items-center text-blue-600 hover:underline mb-4"
+      >
         <FaArrowLeft className="mr-2" /> Kembali ke Daftar Produk
       </Link>
 
       <div className="grid md:grid-cols-2 gap-8 bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-center">
-          <img src={product.image} alt={product.name} className="w-full max-w-sm rounded-lg shadow" />
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full max-w-sm rounded-lg shadow"
+          />
         </div>
 
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">{product.name}</h1>
           <p className="text-sm text-gray-600">{product.category}</p>
-          <p className="text-xl text-green-600 font-semibold">Rp {product.price.toLocaleString()}</p>
+          <p className="text-xl text-green-600 font-semibold">
+            Rp {product.price.toLocaleString()}
+          </p>
 
           <div>
             <h3 className="font-semibold">Deskripsi</h3>
@@ -83,15 +100,17 @@ function ProductDetail({ addToCart, user }) {
 
           <div>
             <h3 className="font-semibold">Stok</h3>
-            <p className={product.stock > 0 ? 'text-green-600' : 'text-red-600'}>
-              {product.stock > 0 ? `${product.stock} tersedia` : 'Stok Habis'}
+            <p
+              className={product.stock > 0 ? "text-green-600" : "text-red-600"}
+            >
+              {product.stock > 0 ? `${product.stock} tersedia` : "Stok Habis"}
             </p>
           </div>
 
           <div className="mt-6 flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center border rounded overflow-hidden">
               <button
-                onClick={() => setQuantity(prev => (prev > 1 ? prev - 1 : 1))}
+                onClick={() => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))}
                 disabled={product.stock <= 0}
                 className="px-3 py-1 bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
               >
@@ -103,13 +122,22 @@ function ProductDetail({ addToCart, user }) {
                 max={product.stock}
                 value={quantity}
                 onChange={(e) =>
-                  setQuantity(Math.min(product.stock, Math.max(1, parseInt(e.target.value) || 1)))
+                  setQuantity(
+                    Math.min(
+                      product.stock,
+                      Math.max(1, parseInt(e.target.value) || 1)
+                    )
+                  )
                 }
                 disabled={product.stock <= 0}
                 className="w-16 text-center border-x px-2 py-1"
               />
               <button
-                onClick={() => setQuantity(prev => (prev < product.stock ? prev + 1 : product.stock))}
+                onClick={() =>
+                  setQuantity((prev) =>
+                    prev < product.stock ? prev + 1 : product.stock
+                  )
+                }
                 disabled={product.stock <= 0}
                 className="px-3 py-1 bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
               >

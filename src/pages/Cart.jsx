@@ -1,9 +1,12 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaTrash, FaArrowRight } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import { FaTrash, FaArrowRight } from "react-icons/fa";
 
 function Cart({ cart, updateQuantity, removeFromCart }) {
-  const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const totalPrice = cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   if (cart.length === 0) {
     return (
@@ -40,7 +43,9 @@ function Cart({ cart, updateQuantity, removeFromCart }) {
 
               <div className="flex-1">
                 <h3 className="text-lg font-semibold">{item.name}</h3>
-                <p className="text-gray-500">Rp {item.price.toLocaleString()}</p>
+                <p className="text-gray-500">
+                  Rp {item.price.toLocaleString()}
+                </p>
               </div>
 
               <div className="flex flex-col items-center gap-2">
@@ -82,7 +87,9 @@ function Cart({ cart, updateQuantity, removeFromCart }) {
 
           <div className="flex justify-between mb-2">
             <span>Total Item:</span>
-            <span>{cart.reduce((total, item) => total + item.quantity, 0)}</span>
+            <span>
+              {cart.reduce((total, item) => total + item.quantity, 0)}
+            </span>
           </div>
 
           <div className="flex justify-between mb-4 font-semibold">
