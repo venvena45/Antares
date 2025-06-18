@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { getUserById, updateUserProfile } from '../services/api';
+import { updateUserProfile } from '../services/api';
 
-function Profile() {
+function Profile({ user, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     nama: '',
@@ -18,29 +18,27 @@ function Profile() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (!userId || !token) return;
+    if (!userId || !token || !user) {
+      setError('Data pengguna tidak tersedia. Silakan login ulang.');
+      setLoading(false);
+      return;
+    }
 
-      setLoading(true);
-      try {
-        const data = await getUserById(userId, token);
-        setFormData({
-          nama: data.nama || '',
-          email: data.email || '',
-          alamat: data.alamat || '',
-          no_telepon: data.no_telepon || '',
-        });
-        setError(null);
-      } catch (err) {
-        console.error('Error:', err);
-        setError(err.message || 'Gagal mengambil data profil.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [userId, token]);
+    try {
+      setFormData({
+        nama: user.user.nama || '',
+        email: user.user.email || '',
+        alamat: user.user.alamat || '',
+        no_telepon: user.user.no_telepon || '',
+      });
+      setError(null);
+    } catch (err) {
+      console.error('Gagal parsing data user:', err);
+      setError('Data pengguna tidak valid.');
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, token, user]);
 
   if (!userId || !token) return <Navigate to="/login" replace />;
 
@@ -64,11 +62,13 @@ function Profile() {
     }
 
     try {
-      await updateUserProfile(userId, formData, token);
+      const updatedData = await updateUserProfile(userId, formData);
+      localStorage.setItem('user', JSON.stringify(formData));
+      if (onUpdate) onUpdate(formData); // update state global dari App
       setIsEditing(false);
       setSuccessMsg('Profil berhasil diperbarui.');
     } catch (err) {
-      console.error(err);
+      console.error('Gagal memperbarui profil:', err);
       alert('Gagal memperbarui profil.');
     }
   };
@@ -82,17 +82,19 @@ function Profile() {
         {isEditing ? 'Edit Profil' : 'Profil Pengguna'}
       </h2>
 
-      {successMsg && (
-        <div className="text-green-600 mb-4">{successMsg}</div>
-      )}
+      {successMsg && <div className="text-green-600 mb-4">{successMsg}</div>}
 
       <form className="space-y-4">
         {['nama', 'email', 'alamat', 'no_telepon'].map((field) => (
           <div key={field}>
-            <label className="block font-medium capitalize mb-1">
+            <label
+              htmlFor={field}
+              className="block font-medium capitalize mb-1"
+            >
               {field.replace('_', ' ')}
             </label>
             <input
+              id={field}
               type="text"
               name={field}
               value={formData[field]}
@@ -100,7 +102,7 @@ function Profile() {
               disabled={!isEditing}
               className={`w-full p-2 border ${
                 isEditing ? 'border-gray-300' : 'border-transparent'
-              } rounded-md`}
+              } rounded-md bg-gray-100`}
             />
           </div>
         ))}
