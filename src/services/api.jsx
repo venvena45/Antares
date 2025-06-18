@@ -156,3 +156,87 @@ export const createOrder = async (orderData) => {
     orderNumber: newOrder.orderNumber,
   };
 };
+
+// Perbaikan function updateObat di api.jsx
+export const updateObat = async (id, data) => {
+  try {
+    // ✅ Validasi input
+    if (!id) {
+      throw new Error("ID obat tidak valid atau undefined");
+    }
+
+    if (!data || typeof data !== "object") {
+      throw new Error("Data update tidak valid");
+    }
+
+    // ✅ Validasi field yang wajib ada
+    if (data.stok === undefined || data.stok === null) {
+      throw new Error("Field stok harus ada dalam data update");
+    }
+
+    if (data.stok < 0) {
+      throw new Error("Stok tidak boleh negatif");
+    }
+
+    // ✅ Log untuk debugging
+    console.log(`📤 Mengirim PUT request ke: /api/obat/${id}`);
+    console.log("📦 Data yang dikirim:", JSON.stringify(data, null, 2));
+
+    const response = await fetch(
+      `https://antaresapi-production.up.railway.app/api/obat/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          // Tambahkan header lain jika diperlukan (misal: Authorization)
+          // 'Authorization': `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    // ✅ Log response status
+    console.log(
+      `📥 Response status: ${response.status} ${response.statusText}`
+    );
+
+    if (!response.ok) {
+      // ✅ Ambil detail error dari response
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+
+      try {
+        const errorData = await response.text();
+        if (errorData) {
+          errorMessage += ` - ${errorData}`;
+        }
+      } catch (e) {
+        // Ignore jika gagal baca error response
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    const result = await response.json();
+    console.log("✅ Update berhasil:", result);
+
+    return result;
+  } catch (error) {
+    console.error("❌ Error dalam updateObat:", error);
+
+    // ✅ Buat error message yang lebih informatif
+    if (error.name === "TypeError" && error.message.includes("fetch")) {
+      throw new Error("Gagal terhubung ke server API");
+    }
+
+    throw new Error(`Gagal update obat: ${error.message}`);
+  }
+};
+// Di file: src/services/api.jsx
+
+export const getObatById = async (id) => {
+  const response = await fetch(
+    `https://antaresapi-production.up.railway.app/api/obat/${id}`
+  );
+  if (!response.ok) throw new Error("Gagal ambil detail obat");
+  return await response.json();
+};
