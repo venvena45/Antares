@@ -14,7 +14,7 @@ function ProductDetail({ addToCart, user }) {
       try {
         setLoading(true);
         const data = await getMedicineById(id);
-        setProduct(data);
+        setProduct(data); // Sudah sesuai struktur getMedicines
       } catch (error) {
         console.error(`Error fetching product with id ${id}:`, error);
       } finally {
@@ -25,18 +25,19 @@ function ProductDetail({ addToCart, user }) {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = (obat) => {
+  const handleAddToCart = () => {
+    if (!product) return;
+
     const itemToCart = {
-      obat_id: obat.obat_id,
-      nama_obat: obat.nama_obat,
-      deskripsi: obat.deskripsi,
-      dosis: obat.dosis,
-      harga_satuan: parseFloat(obat.harga_satuan),
-      harga_grosir: parseFloat(obat.harga_grosir),
-      stok: obat.stok,
-      kategori: obat.kategori,
-      foto: obat.foto,
-      quantity: 1, // tambahan lokal untuk cart
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      wholesalePrice: product.wholesalePrice,
+      stock: product.stock,
+      unit: product.unit,
+      image: product.image,
+      quantity: quantity,
     };
 
     addToCart(itemToCart);
@@ -88,13 +89,6 @@ function ProductDetail({ addToCart, user }) {
             <div>
               <h3 className="font-semibold">Dosis</h3>
               <p className="text-gray-700">{product.dosage}</p>
-            </div>
-          )}
-
-          {product.sideEffects && (
-            <div>
-              <h3 className="font-semibold">Efek Samping</h3>
-              <p className="text-gray-700">{product.sideEffects}</p>
             </div>
           )}
 
