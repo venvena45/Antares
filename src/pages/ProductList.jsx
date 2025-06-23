@@ -41,8 +41,8 @@ function ProductList({ addToCart, user }) {
       const matchesCategory = !filters.category || product.category === filters.category;
       const matchesSearch =
         !filters.search ||
-        product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        product.description.toLowerCase().includes(filters.search.toLowerCase());
+        (product.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+         product.description?.toLowerCase().includes(filters.search.toLowerCase()));
 
       return matchesCategory && matchesSearch;
     })
@@ -50,9 +50,15 @@ function ProductList({ addToCart, user }) {
       const [field, direction] = filters.sort.split('-');
 
       if (field === 'name') {
-        return direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+        const nameA = a.name || '';
+        const nameB = b.name || '';
+        return direction === 'asc'
+          ? nameA.localeCompare(nameB)
+          : nameB.localeCompare(nameA);
       } else if (field === 'price') {
-        return direction === 'asc' ? a.price - b.price : b.price - a.price;
+        const priceA = a.price ?? 0;
+        const priceB = b.price ?? 0;
+        return direction === 'asc' ? priceA - priceB : priceB - priceA;
       }
 
       return 0;
@@ -154,7 +160,7 @@ function ProductList({ addToCart, user }) {
               key={product.id}
               product={product}
               addToCart={addToCart}
-              user={user} // ✅ diteruskan ke ProductCard
+              user={user}
             />
           ))}
         </div>

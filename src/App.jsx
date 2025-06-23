@@ -23,16 +23,26 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile.jsx";
 
 function App({ pathname, user, login, logout, setUser }) {
-  const [cart, setCart] = useState([]);
-
-  useEffect(() => {
+  const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("cart");
-    if (savedCart) setCart(JSON.parse(savedCart));
-  }, []);
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
+
+  // Sinkronisasi antar tab browser
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if (e.key === "cart") {
+        setCart(e.newValue ? JSON.parse(e.newValue) : []);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   const addToCart = (product) => {
     const existingItem = cart.find((item) => item.id === product.id);
@@ -40,21 +50,12 @@ function App({ pathname, user, login, logout, setUser }) {
       setCart(
         cart.map((item) =>
           item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + (product.quantity || 1),
-              }
+            ? { ...item, quantity: item.quantity + (product.quantity || 1) }
             : item
         )
       );
     } else {
-      setCart([
-        ...cart,
-        {
-          ...product,
-          quantity: product.quantity || 1,
-        },
-      ]);
+      setCart([...cart, { ...product, quantity: product.quantity || 1 }]);
     }
   };
 
@@ -128,9 +129,7 @@ function App({ pathname, user, login, logout, setUser }) {
           />
           <Route
             path="/checkout"
-            element={
-              <Checkout cart={cart} user={user} clearCart={clearCart} />
-            }
+            element={<Checkout cart={cart} user={user} clearCart={clearCart} />}
           />
           <Route path="/login" element={<Login onLogin={login} />} />
           <Route path="/register" element={<Register />} />
@@ -183,6 +182,7 @@ function AppWithRouter() {
     localStorage.removeItem("userId");
     localStorage.removeItem("userVisual");
     localStorage.removeItem("user");
+    localStorage.removeItem("cart");
   };
 
   useEffect(() => {
