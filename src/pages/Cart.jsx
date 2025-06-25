@@ -12,7 +12,10 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
   );
 
   // Hitung total items
-  const totalItems = cart.reduce((total, item) => total + (item.quantity ?? 0), 0);
+  const totalItems = cart.reduce(
+    (total, item) => total + (item.quantity ?? 0),
+    0
+  );
 
   if (cart.length === 0) {
     return (
@@ -57,7 +60,7 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
                   alt={item.name}
                   className="w-20 h-20 object-cover rounded border"
                   onError={(e) => {
-                    e.target.src = '/placeholder-medicine.png'; // fallback image
+                    e.target.src = "/placeholder-medicine.png"; // fallback image
                   }}
                 />
               </div>
@@ -68,15 +71,13 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
                   {item.name}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  {item.category || 'Obat'}
+                  {item.category || "Obat"}
                 </p>
                 <div className="flex items-center gap-4 mt-2">
                   <span className="text-lg font-bold text-green-600">
                     Rp {(item.price ?? 0).toLocaleString()}
                   </span>
-                  <span className="text-sm text-gray-500">
-                    per unit
-                  </span>
+                  <span className="text-sm text-gray-500">per unit</span>
                 </div>
               </div>
 
@@ -84,20 +85,24 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
               <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center border rounded-lg overflow-hidden">
                   <button
-                    onClick={() => updateQuantity(item.id, (item.quantity ?? 1) - 1)}
+                    onClick={() =>
+                      updateQuantity(item.id, (item.quantity ?? 1) - 1)
+                    }
                     className="p-2 text-gray-600 bg-gray-50 hover:bg-gray-100 transition disabled:opacity-50"
                     disabled={(item.quantity ?? 1) <= 1}
                     title="Kurangi"
                   >
                     <FaMinus size={12} />
                   </button>
-                  
+
                   <div className="px-4 py-2 min-w-[50px] text-center font-semibold">
                     {item.quantity ?? 1}
                   </div>
-                  
+
                   <button
-                    onClick={() => updateQuantity(item.id, (item.quantity ?? 1) + 1)}
+                    onClick={() =>
+                      updateQuantity(item.id, (item.quantity ?? 1) + 1)
+                    }
                     className="p-2 text-gray-600 bg-gray-50 hover:bg-gray-100 transition disabled:opacity-50"
                     disabled={(item.quantity ?? 1) >= (item.stock ?? Infinity)}
                     title="Tambah"
@@ -109,11 +114,12 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
                 {/* Subtotal */}
                 <div className="text-center">
                   <p className="text-sm font-semibold text-gray-700">
-                    Rp {((item.price ?? 0) * (item.quantity ?? 1)).toLocaleString()}
+                    Rp{" "}
+                    {(
+                      (item.price ?? 0) * (item.quantity ?? 1)
+                    ).toLocaleString()}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    subtotal
-                  </p>
+                  <p className="text-xs text-gray-500">subtotal</p>
                 </div>
 
                 {/* Tombol Hapus */}
@@ -131,9 +137,7 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
 
                 {/* Stock warning */}
                 {item.stock && item.quantity >= item.stock && (
-                  <p className="text-xs text-orange-600">
-                    Stok terbatas
-                  </p>
+                  <p className="text-xs text-orange-600">Stok terbatas</p>
                 )}
               </div>
             </div>
@@ -145,28 +149,32 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Ringkasan Belanja
           </h2>
-          
+
           <div className="space-y-3 mb-4">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Total Item:</span>
               <span className="font-semibold">{totalItems} items</span>
             </div>
-            
+
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Subtotal:</span>
-              <span className="font-semibold">Rp {totalPrice.toLocaleString()}</span>
+              <span className="font-semibold">
+                Rp {totalPrice.toLocaleString()}
+              </span>
             </div>
-            
+
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Ongkos Kirim:</span>
               <span className="text-green-600">Gratis</span>
             </div>
-            
+
             <hr className="border-gray-300" />
-            
+
             <div className="flex justify-between text-lg font-bold">
               <span>Total Harga:</span>
-              <span className="text-green-600">Rp {totalPrice.toLocaleString()}</span>
+              <span className="text-green-600">
+                Rp {totalPrice.toLocaleString()}
+              </span>
             </div>
           </div>
 
@@ -179,7 +187,7 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
               Lanjutkan ke Pembayaran
               <FaArrowRight className="ml-2" />
             </Link>
-            
+
             <Link
               to="/products"
               className="block w-full text-center text-blue-600 hover:text-blue-800 hover:underline py-2 transition"
