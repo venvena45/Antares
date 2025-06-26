@@ -13,6 +13,7 @@ import HeaderHome from "./components/HeaderHome";
 import Footer from "./components/Footer";
 import LoginAlert from "./components/LoginAlert";
 
+import RiwayatPesanan from "./pages/RiwayatPesanan";
 import Home from "./pages/Home";
 import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
@@ -70,9 +71,7 @@ function App({ pathname, user, login, logout, setUser }) {
     }
 
     setCart(
-      cart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      )
+      cart.map((item) => (item.id === productId ? { ...item, quantity } : item))
     );
   };
 
@@ -117,6 +116,8 @@ function App({ pathname, user, login, logout, setUser }) {
             path="/products/:id"
             element={<ProductDetail addToCart={addToCart} user={user} />}
           />
+          <Route path="/riwayat" element={<RiwayatPesanan />} />
+
           <Route
             path="/cart"
             element={

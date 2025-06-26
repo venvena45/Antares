@@ -295,3 +295,21 @@ export const getObatById = async (id) => {
 
   return await response.json();
 };
+
+export const getDetailPesananById = async (pesananId) => {
+  const token = localStorage.getItem("token");
+  const response = await fetch(
+    `${API_BASE_URL}/detail-pesanan/pesanan/${pesananId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data detail pesanan");
+  }
+
+  return await response.json();
+};
