@@ -310,7 +310,6 @@ function Checkout({ cart, clearCart }) {
               pesanan_id: orderId,
               obat_id: itemId,
               jumlah: quantity, // Pastikan ini adalah integer
-              subtotal: subtotal,
             };
 
             console.log("Sending detail data:", detailData);
