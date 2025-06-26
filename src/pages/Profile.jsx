@@ -1,40 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import { updateUserProfile } from '../services/api';
+import React, { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
+import { updateUserProfile } from "../services/api";
 
 function Profile({ user, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    nama: '',
-    email: '',
-    alamat: '',
-    no_telepon: '',
+    nama: "",
+    email: "",
+    alamat: "",
+    no_telepon: "",
+    role: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [successMsg, setSuccessMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const userId = localStorage.getItem('userId');
-  const token = localStorage.getItem('token');
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!userId || !token || !user) {
-      setError('Data pengguna tidak tersedia. Silakan login ulang.');
+      setError("Data pengguna tidak tersedia. Silakan login ulang.");
       setLoading(false);
       return;
     }
 
     try {
       setFormData({
-        nama: user.user.nama || '',
-        email: user.user.email || '',
-        alamat: user.user.alamat || '',
-        no_telepon: user.user.no_telepon || '',
+        nama: user.nama || "",
+        email: user.email || "",
+        alamat: user.alamat || "",
+        no_telepon: user.no_telepon || "",
+        role: user.role || "admin",
       });
+
       setError(null);
     } catch (err) {
-      console.error('Gagal parsing data user:', err);
-      setError('Data pengguna tidak valid.');
+      console.error("Gagal parsing data user:", err);
+      setError("Data pengguna tidak valid.");
     } finally {
       setLoading(false);
     }
@@ -52,24 +55,24 @@ function Profile({ user, onUpdate }) {
 
   const handleSave = async () => {
     if (!formData.nama.trim() || !formData.email.trim()) {
-      alert('Nama dan Email wajib diisi.');
+      alert("Nama dan Email wajib diisi.");
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      alert('Format email tidak valid.');
+      alert("Format email tidak valid.");
       return;
     }
 
     try {
       const updatedData = await updateUserProfile(userId, formData);
-      localStorage.setItem('user', JSON.stringify(formData));
+      localStorage.setItem("user", JSON.stringify(formData));
       if (onUpdate) onUpdate(formData); // update state global dari App
       setIsEditing(false);
-      setSuccessMsg('Profil berhasil diperbarui.');
+      setSuccessMsg("Profil berhasil diperbarui.");
     } catch (err) {
-      console.error('Gagal memperbarui profil:', err);
-      alert('Gagal memperbarui profil.');
+      console.error("Gagal memperbarui profil:", err);
+      alert("Gagal memperbarui profil.");
     }
   };
 
@@ -79,19 +82,19 @@ function Profile({ user, onUpdate }) {
   return (
     <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-6 mt-6">
       <h2 className="text-2xl font-semibold mb-4">
-        {isEditing ? 'Edit Profil' : 'Profil Pengguna'}
+        {isEditing ? "Edit Profil" : "Profil Pengguna"}
       </h2>
 
       {successMsg && <div className="text-green-600 mb-4">{successMsg}</div>}
 
       <form className="space-y-4">
-        {['nama', 'email', 'alamat', 'no_telepon'].map((field) => (
+        {["nama", "email", "alamat", "no_telepon"].map((field) => (
           <div key={field}>
             <label
               htmlFor={field}
               className="block font-medium capitalize mb-1"
             >
-              {field.replace('_', ' ')}
+              {field.replace("_", " ")}
             </label>
             <input
               id={field}
@@ -101,7 +104,7 @@ function Profile({ user, onUpdate }) {
               onChange={handleChange}
               disabled={!isEditing}
               className={`w-full p-2 border ${
-                isEditing ? 'border-gray-300' : 'border-transparent'
+                isEditing ? "border-gray-300" : "border-transparent"
               } rounded-md bg-gray-100`}
             />
           </div>
@@ -128,7 +131,7 @@ function Profile({ user, onUpdate }) {
           <button
             onClick={() => {
               setIsEditing(true);
-              setSuccessMsg('');
+              setSuccessMsg("");
             }}
             className="bg-green-600 text-white px-4 py-2 rounded-md"
           >
