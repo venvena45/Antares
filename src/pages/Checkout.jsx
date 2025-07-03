@@ -30,7 +30,7 @@ const FaEdit = () => (
 );
 
 // --- Konstanta API ---
-const API_BASE_URL = "https://antaresapi-production.up.railway.app/api";
+const API_BASE_URL = "https://antaresapi-production-006d.up.railway.app/api";
 
 // --- Fungsi-fungsi API dengan Penanganan Error ---
 
