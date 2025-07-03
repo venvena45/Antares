@@ -233,7 +233,7 @@ export const updateObat = async (id, data) => {
     console.log("📦 Data yang dikirim:", JSON.stringify(data, null, 2));
 
     const response = await fetch(
-      `https://antaresapi-production.up.railway.app/api/obat/${id}`,
+      `https://antaresapi-production-006d.up.railway.app/api/obat/${id}`,
 
       {
         method: "PUT",
@@ -288,7 +288,7 @@ export const updateObat = async (id, data) => {
 
 export const getObatById = async (id) => {
   const response = await fetch(
-    `https://antaresapi-production.up.railway.app/api/obat/${id}`
+    `https://antaresapi-production-006d.up.railway.app/api/obat/${id}`
   );
 
   if (!response.ok) throw new Error("Gagal ambil detail obat");
@@ -296,6 +296,35 @@ export const getObatById = async (id) => {
   return await response.json();
 };
 
+/**
+ * Mengambil seluruh riwayat pesanan berdasarkan ID pengguna.
+ * ASUMSI: Endpoint di backend adalah '/pesanan/user/:userId'
+ * @param {string} userId - ID dari pengguna yang sedang login.
+ * @returns {Promise<Array>} - Sebuah promise yang resolve ke array daftar pesanan.
+ */
+export const getPesananByUserId = async (userId) => {
+  const token = localStorage.getItem("token");
+  const response = await fetch(
+    `${API_BASE_URL}/pesanan/user/${userId}`, 
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil riwayat pesanan");
+  }
+
+  return await response.json();
+};
+
+/**
+ * Mengambil detail dari satu pesanan spesifik berdasarkan ID pesanan.
+ * @param {string} pesananId - ID dari pesanan yang ingin dilihat detailnya.
+ * @returns {Promise<Object>} - Sebuah promise yang resolve ke objek detail pesanan.
+ */
 export const getDetailPesananById = async (pesananId) => {
   const token = localStorage.getItem("token");
   const response = await fetch(

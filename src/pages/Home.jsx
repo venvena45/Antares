@@ -108,17 +108,19 @@ function Home() {
       {/* Features Section */}
       <div className="grid md:grid-cols-3 gap-8 mb-20">
         <div className="text-center bg-white shadow-lg p-6 rounded-xl">
-          <FaPills className="text-blue-600 text-4xl mx-auto mb-4" />
+          <FaPills className="text-[#F4631E] text-4xl mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Produk Berkualitas</h3>
           <p className="text-gray-600">Semua obat dan produk kesehatan kami terjamin kualitasnya</p>
         </div>
-        <div className="text-center bg-white shadow-lg p-6 rounded-xl">
-          <FaStethoscope className="text-blue-600 text-4xl mx-auto mb-4" />
+      <a href="https://wa.me/6285381128438" target="_blank" rel="noopener noreferrer" className="block text-center bg-white shadow-lg p-6 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+        <div className="text-center">
+          <FaStethoscope className="text-[#F4631E] text-4xl mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Konsultasi Gratis</h3>
           <p className="text-gray-600">Konsultasikan kebutuhan kesehatan Anda dengan apoteker kami</p>
         </div>
+      </a>
         <div className="text-center bg-white shadow-lg p-6 rounded-xl">
-          <FaTruck className="text-blue-600 text-4xl mx-auto mb-4" />
+          <FaTruck className="text-[#F4631E] text-4xl mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Pengiriman Cepat</h3>
           <p className="text-gray-600">Kami mengantar pesanan Anda dengan cepat dan aman</p>
         </div>

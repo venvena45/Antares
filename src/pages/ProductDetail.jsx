@@ -5,7 +5,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 // Dalam aplikasi nyata, ini akan berada di file terpisah seperti 'services/api.js'
 const getMedicineById = async (id) => {
   // Pastikan URL API sudah benar dan dapat diakses
-  const response = await fetch(`https://antaresapi-production.up.railway.app/api/obat/${id}`);
+  const response = await fetch(`https://antaresapi-production-006d.up.railway.app/api/obat/${id}`);
   if (!response.ok) {
     // Memberikan pesan error yang lebih spesifik
     throw new Error(`Gagal mengambil data obat: ${response.statusText}`);
