@@ -12,6 +12,7 @@ import HeaderRegistrasi from "./components/HeaderRegistrasi";
 import HeaderHome from "./components/HeaderHome";
 import Footer from "./components/Footer";
 import LoginAlert from "./components/LoginAlert";
+import DraggableWhatsAppButton from './components/DraggableWhatsAppButton'; // <-- SUDAH BENAR DIIMPOR
 
 import RiwayatPesanan from "./pages/RiwayatPesanan";
 import Home from "./pages/Home";
@@ -78,9 +79,10 @@ function App({ pathname, user, login, logout, setUser }) {
   const clearCart = () => {
     setCart([]);
   };
-
+  
+  // Perbaikan kecil: Ganti "/home" menjadi "/" agar sesuai dengan Route
   let header;
-  if (pathname === "/home") {
+  if (pathname === "/") { 
     header = user ? (
       <HeaderHome user={user} onLogout={logout} />
     ) : (
@@ -149,9 +151,14 @@ function App({ pathname, user, login, logout, setUser }) {
         </Routes>
       </main>
       <Footer />
+      
+      {/* PANGGIL KOMPONEN DI SINI */}
+      <DraggableWhatsAppButton />
     </div>
   );
 }
+
+// --- Komponen di bawah ini tidak perlu diubah ---
 
 function AppWithRouter() {
   const location = useLocation();
@@ -161,7 +168,6 @@ function AppWithRouter() {
 
   const login = (userData) => {
     setUser(userData);
-
     const userId = userData.user?.user_id;
     localStorage.setItem("userId", userId);
     localStorage.setItem("token", "session-token");
