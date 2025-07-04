@@ -82,25 +82,20 @@ function App({ pathname, user, login, logout, setUser }) {
   
   // Perbaikan kecil: Ganti "/home" menjadi "/" agar sesuai dengan Route
   let header;
-  if (pathname === "/") { 
-    header = user ? (
-      <HeaderHome user={user} onLogout={logout} />
-    ) : (
-      <Navbar user={user} onLogout={logout} />
-    );
-  } else if (pathname === "/login") {
-    header = <HeaderLogin />;
-  } else if (pathname === "/register") {
-    header = <HeaderRegistrasi />;
-  } else {
-    header = (
-      <Navbar
-        cartItemCount={cart.reduce((total, item) => total + item.quantity, 0)}
-        user={user}
-        onLogout={logout}
-      />
-    );
-  }
+  if (pathname === "/login") {
+  header = <HeaderLogin />;
+} else if (pathname === "/register") {
+  header = <HeaderRegistrasi />;
+} else {
+  header = (
+    <Navbar
+      cartItemCount={cart.reduce((total, item) => total + item.quantity, 0)}
+      user={user}
+      onLogout={logout}
+    />
+  );
+}
+
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 text-gray-800">
