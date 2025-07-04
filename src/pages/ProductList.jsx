@@ -109,11 +109,11 @@ function ProductList({ addToCart, user }) {
                   onChange={handleFilterChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#309898]"
                 >
-                  <option value="">Semua Kategori</option>
-                  <option value="prescription">Obat Resep</option>
-                  <option value="otc">Obat Bebas</option>
-                  <option value="vitamins">Vitamin & Suplemen</option>
-                  <option value="personal-care">Perawatan Pribadi</option>
+                    <option value="">Semua Kategori</option>
+                    <option value="Obat Resep">Obat Resep</option>
+                    <option value="Obat Bebas">Obat Bebas</option>
+                    <option value="Vitamin & Suplemen">Vitamin & Suplemen</option>
+                    <option value="Skincare">Skincare</option>
                 </select>
 
                 <select

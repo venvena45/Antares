@@ -129,26 +129,20 @@ export const getMedicines = async () => {
 
   return response.data.map((item) => ({
     id: item.obat_id,
-
     name: item.nama_obat,
-
     description: item.deskripsi,
-
     dosage: item.dosis,
-
     price: item.harga_satuan,
-
     wholesalePrice: item.harga_grosir,
-
     stock: item.stok,
-
     unit: item.satuan,
-
     image: item.foto,
 
-    category: "", // bisa diisi jika tersedia
+    // FIXED: gunakan kategori asli
+    category: item.kategori || "Tanpa Kategori",
   }));
 };
+
 
 export const getMedicineById = async (id) => {
   const response = await fetch(
