@@ -296,43 +296,29 @@ export const getObatById = async (id) => {
  * @param {string} userId - ID dari pengguna yang sedang login.
  * @returns {Promise<Array>} - Sebuah promise yang resolve ke array daftar pesanan.
  */
+// Ambil semua pesanan
 export const getPesananByUserId = async (userId) => {
   const token = localStorage.getItem("token");
-  const response = await fetch(
-    `${API_BASE_URL}/pesanan/user/${userId}`, 
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/pesanan`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-  if (!response.ok) {
-    throw new Error("Gagal mengambil riwayat pesanan");
-  }
-
-  return await response.json();
+  if (!res.ok) throw new Error("Gagal ambil pesanan");
+  const allPesanan = await res.json();
+  return allPesanan.filter((p) => p.pelanggan_id == userId);
 };
 
-/**
- * Mengambil detail dari satu pesanan spesifik berdasarkan ID pesanan.
- * @param {string} pesananId - ID dari pesanan yang ingin dilihat detailnya.
- * @returns {Promise<Object>} - Sebuah promise yang resolve ke objek detail pesanan.
- */
 export const getDetailPesananById = async (pesananId) => {
   const token = localStorage.getItem("token");
-  const response = await fetch(
-    `${API_BASE_URL}/detail-pesanan/pesanan/${pesananId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const res = await fetch(`${API_BASE_URL}/detail-pesanan/pesanan/${pesananId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-  if (!response.ok) {
-    throw new Error("Gagal mengambil data detail pesanan");
-  }
-
-  return await response.json();
+  if (!res.ok) throw new Error("Gagal ambil detail");
+  return await res.json();
 };
+
