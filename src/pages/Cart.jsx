@@ -163,11 +163,6 @@ function Cart({ cart, updateQuantity, removeFromCart, clearCart }) {
               </span>
             </div>
 
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Ongkos Kirim:</span>
-              <span className="text-green-600">Gratis</span>
-            </div>
-
             <hr className="border-gray-300" />
 
             <div className="flex justify-between text-lg font-bold">

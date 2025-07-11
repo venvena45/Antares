@@ -34,7 +34,13 @@ function RiwayatPesanan() {
                   if (!item.Obat && item.obat_id) {
                     try {
                       const obat = await getObatById(item.obat_id);
-                      return { ...item, Obat: obat };
+                      return {
+                        ...item,
+                        Obat: {
+                          ...obat,
+                          gambar: obat.foto, 
+                        },
+                      };
                     } catch {
                       return item;
                     }
@@ -42,6 +48,7 @@ function RiwayatPesanan() {
                   return item;
                 })
               );
+
 
               return { ...pesanan, DetailPesanans: detailWithObat };
             } catch {
@@ -144,6 +151,7 @@ function RiwayatPesanan() {
                 <table className="min-w-full table-fixed text-sm bg-white shadow-sm rounded-lg overflow-hidden">
                   <thead className="bg-gray-100 text-gray-700">
                     <tr>
+                      <th className="w-[100px] px-6 py-3 text-left font-medium">Gambar</th>
                       <th className="w-1/2 px-6 py-3 text-left font-medium">Nama Obat</th>
                       <th className="w-1/6 px-6 py-3 text-center font-medium">Jumlah</th>
                       <th className="w-1/6 px-6 py-3 text-right font-medium">Harga Satuan</th>
@@ -154,6 +162,22 @@ function RiwayatPesanan() {
                     {pesanan.DetailPesanans?.length > 0 ? (
                       pesanan.DetailPesanans.map((item) => (
                         <tr key={item.detail_pesanan_id} className="hover:bg-gray-50 transition">
+                          <td className="px-6 py-3">
+                              {item.Obat?.gambar ? (
+                                <div className="relative w-16 h-16">
+                                  <img
+                                    src={item.Obat.gambar}
+                                    alt={item.Obat.nama_obat}
+                                    className="w-full h-full object-cover rounded-xl shadow-md border border-gray-300 hover:scale-105 hover:shadow-lg transition-transform duration-300 ease-in-out"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-16 h-16 flex items-center justify-center bg-gray-100 text-gray-400 rounded-xl border">
+                                  <span className="text-xs text-center">Tidak ada gambar</span>
+                                </div>
+                              )}
+                            </td>
+
                           <td className="px-6 py-3">{item.Obat?.nama_obat || "Tidak tersedia"}</td>
                           <td className="px-6 py-3 text-center">{item.jumlah}</td>
                           <td className="px-6 py-3 text-right">
@@ -166,7 +190,7 @@ function RiwayatPesanan() {
                       ))
                     ) : (
                       <tr>
-                        <td className="px-6 py-4 italic text-gray-500 text-center" colSpan="4">
+                        <td className="px-6 py-4 italic text-gray-500 text-center" colSpan="5">
                           Detail obat tidak tersedia
                         </td>
                       </tr>
@@ -174,8 +198,6 @@ function RiwayatPesanan() {
                   </tbody>
                 </table>
               </div>
-
-
 
               <div className="mt-3 flex flex-col items-end">
                 <p className="text-sm text-gray-500 mb-1">
