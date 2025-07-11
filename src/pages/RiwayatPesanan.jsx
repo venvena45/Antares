@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { getPesananByUserId, getDetailPesananById, getObatById } from "../services/api";
+import {
+  getPesananByUserId,
+  getDetailPesananById,
+  getObatById,
+} from "../services/api";
 
 function RiwayatPesanan() {
   const [daftarPesanan, setDaftarPesanan] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("diproses");
 
   const userId = localStorage.getItem("userId");
 
@@ -59,30 +64,62 @@ function RiwayatPesanan() {
   }, [userId]);
 
   const formatDate = (dateString) => {
-      const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      };
-
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
     return new Date(dateString).toLocaleDateString("id-ID", options);
+  };
+
+  const filterByStatus = (status) => {
+    return daftarPesanan.filter((p) => p.status_pesanan === status);
+  };
+
+  const statusLabels = {
+    diproses: "Diproses",
+    dikirim: "Dikirim",
+    selesai: "Selesai",
+  };
+
+  const statusColors = {
+    diproses: "bg-yellow-100 text-yellow-800",
+    dikirim: "bg-blue-100 text-blue-800",
+    selesai: "bg-green-100 text-green-800",
   };
 
   if (loading) return <p className="text-center mt-8">Memuat riwayat...</p>;
   if (error) return <p className="text-center mt-8 text-red-500">{error}</p>;
 
   return (
-    <div className="max-w-4xl mx-auto mt-6 p-6 bg-white rounded-xl shadow-lg">
+    <div className="max-w-5xl mx-auto mt-6 p-6 bg-white rounded-xl shadow-lg">
       <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
         Riwayat Pemesanan Anda
       </h2>
-      {daftarPesanan.length === 0 ? (
+
+      <div className="flex gap-4 mb-6">
+        {Object.keys(statusLabels).map((status) => (
+          <button
+            key={status}
+            onClick={() => setActiveTab(status)}
+            className={`px-4 py-2 rounded-full font-semibold border ${
+              activeTab === status
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            {statusLabels[status]}
+          </button>
+        ))}
+      </div>
+
+      {filterByStatus(activeTab).length === 0 ? (
         <p className="text-center text-gray-500 py-8">
-          Tidak ada riwayat pemesanan yang ditemukan.
+          Tidak ada pesanan dengan status {statusLabels[activeTab]}.
         </p>
       ) : (
         <div className="space-y-6">
-          {daftarPesanan.map((pesanan) => (
+          {filterByStatus(activeTab).map((pesanan) => (
             <div
               key={pesanan.pesanan_id}
               className="border border-gray-200 p-4 rounded-lg shadow-sm"
@@ -97,55 +134,55 @@ function RiwayatPesanan() {
                   </p>
                 </div>
                 <span
-                  className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                    pesanan.status_pesanan === "selesai"
-                      ? "bg-green-100 text-green-800"
-                      : pesanan.status_pesanan === "diproses"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
+                  className={`px-3 py-1 text-sm font-semibold rounded-full ${statusColors[pesanan.status_pesanan]}`}
                 >
                   {pesanan.status_pesanan}
                 </span>
               </div>
 
-              <h4 className="font-semibold mb-2 text-gray-800">Detail Obat:</h4>
-              <ul className="space-y-2 border-t pt-3">
-                {pesanan.DetailPesanans && pesanan.DetailPesanans.length > 0 ? (
-                  pesanan.DetailPesanans.map((item) => (
-                    <li
-                      key={item.detail_pesanan_id}
-                      className="flex justify-between items-center text-sm"
-                    >
-                      <div>
-                        <p className="font-semibold">
-                          {item.Obat?.nama_obat || "Nama obat tidak tersedia"}
-                        </p>
-                        <p className="text-gray-600">
-                          {item.jumlah} x Rp{" "}
-                          {Number(item.Obat?.harga_satuan || 0).toLocaleString("id-ID")}
-                        </p>
-                      </div>
-                      <p className="font-semibold">
-                        Rp{" "}
-                        {(item.jumlah * (item.Obat?.harga_satuan || 0)).toLocaleString("id-ID")}
-                      </p>
-                    </li>
-                  ))
-                ) : (
-                  <li className="italic text-gray-500">
-                    Detail obat tidak tersedia
-                  </li>
-                )}
-              </ul>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-fixed text-sm bg-white shadow-sm rounded-lg overflow-hidden">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="w-1/2 px-6 py-3 text-left font-medium">Nama Obat</th>
+                      <th className="w-1/6 px-6 py-3 text-center font-medium">Jumlah</th>
+                      <th className="w-1/6 px-6 py-3 text-right font-medium">Harga Satuan</th>
+                      <th className="w-1/6 px-6 py-3 text-right font-medium">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-800 divide-y divide-gray-200">
+                    {pesanan.DetailPesanans?.length > 0 ? (
+                      pesanan.DetailPesanans.map((item) => (
+                        <tr key={item.detail_pesanan_id} className="hover:bg-gray-50 transition">
+                          <td className="px-6 py-3">{item.Obat?.nama_obat || "Tidak tersedia"}</td>
+                          <td className="px-6 py-3 text-center">{item.jumlah}</td>
+                          <td className="px-6 py-3 text-right">
+                            Rp {Number(item.Obat?.harga_satuan || 0).toLocaleString("id-ID")}
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            Rp {(item.jumlah * (item.Obat?.harga_satuan || 0)).toLocaleString("id-ID")}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td className="px-6 py-4 italic text-gray-500 text-center" colSpan="4">
+                          Detail obat tidak tersedia
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-              <div className="border-t mt-3 pt-3 flex flex-col items-end">
+
+
+              <div className="mt-3 flex flex-col items-end">
                 <p className="text-sm text-gray-500 mb-1">
                   Termasuk biaya kirim sebesar Rp 10.000
                 </p>
                 <p className="font-bold text-lg text-gray-900">
-                  Total Pesanan: Rp{" "}
-                  {Number(pesanan.total_harga).toLocaleString("id-ID")}
+                  Total Pesanan: Rp {Number(pesanan.total_harga).toLocaleString("id-ID")}
                 </p>
               </div>
             </div>
