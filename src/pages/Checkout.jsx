@@ -29,16 +29,10 @@ const FaEdit = () => (
   </svg>
 );
 
-// --- Konstanta API ---
+// --- Konstanta API (Tidak berubah) ---
 const API_BASE_URL = "https://antaresapi-production-006d.up.railway.app/api";
 
-// --- Fungsi-fungsi API dengan Penanganan Error ---
-
-/**
- * Membuat pesanan baru.
- * @param {object} orderData - Data utama pesanan.
- * @returns {Promise<object>} Respons dari server.
- */
+// --- Fungsi-fungsi API dengan Penanganan Error (Tidak berubah) ---
 const createOrder = async (orderData) => {
   console.log("🟦 Request ke /pesanan/:", JSON.stringify(orderData, null, 2));
   const response = await fetch(`${API_BASE_URL}/pesanan/`, {
@@ -52,11 +46,6 @@ const createOrder = async (orderData) => {
   return await response.json();
 };
 
-/**
- * Membuat catatan detail untuk sebuah pesanan.
- * @param {object} detailData - Data detail pesanan.
- * @returns {Promise<object>} Respons dari server.
- */
 const createOrderDetail = async (detailData) => {
   console.log(
     "🟨 Request ke /detail-pesanan/:",
@@ -76,11 +65,6 @@ const createOrderDetail = async (detailData) => {
   return await response.json();
 };
 
-/**
- * Mengambil data lengkap satu obat berdasarkan ID-nya.
- * @param {number} id - ID dari obat.
- * @returns {Promise<object>} Data lengkap obat.
- */
 const getObatById = async (id) => {
   const response = await fetch(`${API_BASE_URL}/obat/${id}`);
   if (!response.ok) {
@@ -89,12 +73,6 @@ const getObatById = async (id) => {
   return await response.json();
 };
 
-/**
- * Memperbarui data sebuah obat.
- * @param {number} id - ID dari obat yang akan diperbarui.
- * @param {object} data - Objek data lengkap untuk obat.
- * @returns {Promise<object>} Respons dari server.
- */
 const updateObat = async (id, data) => {
   console.log(`🟥 PUT ke /obat/${id}:`, JSON.stringify(data, null, 2));
   const response = await fetch(`${API_BASE_URL}/obat/${id}`, {
@@ -111,10 +89,37 @@ const updateObat = async (id, data) => {
   return await response.json();
 };
 
-/**
- * Komponen Checkout untuk menangani langkah terakhir dari sebuah pesanan.
- * @param {{cart: Array<object>, clearCart: Function}} props - Props komponen.
- */
+// ++ PERUBAHAN 1: Tambahkan fungsi helper ini
+const parseAddress = (addressString) => {
+    if (!addressString) {
+      return { extractedCity: '', extractedPostalCode: '' };
+    }
+    const postalCodeMatch = addressString.match(/\b\d{5}\b/);
+    const extractedPostalCode = postalCodeMatch ? postalCodeMatch[0] : '';
+    let extractedCity = '';
+    const cityKeywords = ['Kota', 'Kab.', 'Kabupaten'];
+    const addressParts = addressString.split(/[\s,]+/);
+    for (let i = 0; i < addressParts.length; i++) {
+      if (cityKeywords.includes(addressParts[i]) && addressParts[i + 1]) {
+        extractedCity = addressParts[i + 1];
+        break;
+      }
+    }
+    if (!extractedCity && extractedPostalCode) {
+      const postalCodeIndex = addressString.lastIndexOf(extractedPostalCode);
+      if (postalCodeIndex > 0) {
+        const relevantPart = addressString.substring(0, postalCodeIndex).trim();
+        const parts = relevantPart.split(/[\s,]+/);
+        extractedCity = parts.pop() || '';
+      }
+    }
+    if (extractedCity) {
+      extractedCity = extractedCity.replace(/,/g, '');
+    }
+    return { extractedCity, extractedPostalCode };
+};
+
+
 function Checkout({ cart, clearCart }) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -135,7 +140,6 @@ function Checkout({ cart, clearCart }) {
 
   const shippingFee = 10000;
 
-  // DEBUG: Tampilkan data cart di checkout
   useEffect(() => {
     console.log("=== CHECKOUT CART DEBUG ===");
     console.log("Cart data:", cart);
@@ -155,6 +159,7 @@ function Checkout({ cart, clearCart }) {
     console.log("============================");
   }, [cart]);
 
+  // ++ PERUBAHAN 2: Logika di dalam useEffect ini diubah
   useEffect(() => {
     try {
       const userRaw = localStorage.getItem("user");
@@ -173,14 +178,20 @@ function Checkout({ cart, clearCart }) {
       }
 
       setUserData(finalUserObject);
+
+      // Parsing alamat dari data yang dimuat
+      const fullAddress = finalUserObject.alamat || "";
+      const { extractedCity, extractedPostalCode } = parseAddress(fullAddress);
+      
       setFormData((prev) => ({
         ...prev,
         name: finalUserObject.nama || "",
         email: finalUserObject.email || "",
         phone: finalUserObject.no_telepon || "",
-        address: finalUserObject.alamat || "",
-        city: finalUserObject.kota || "",
-        postalCode: finalUserObject.kode_pos || "",
+        address: fullAddress,
+        // Gunakan hasil parsing sebagai prioritas
+        city: extractedCity || finalUserObject.kota || "",
+        postalCode: extractedPostalCode || finalUserObject.kode_pos || "",
       }));
     } catch (error) {
       console.error("Gagal memproses data pengguna:", error);
@@ -194,7 +205,6 @@ function Checkout({ cart, clearCart }) {
     }
   }, [cart, isOrderComplete, navigate]);
 
-  // Hitung total dengan validasi yang lebih ketat
   const totalPrice = cart.reduce((total, item) => {
     const price = parseFloat(item.price) || 0;
     const quantity = parseInt(item.quantity) || 0;
@@ -205,14 +215,30 @@ function Checkout({ cart, clearCart }) {
 
   const totalWithShipping = totalPrice + shippingFee;
 
+  // ++ PERUBAHAN 3: Fungsi handleChange ini diubah
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Jika field alamat yang berubah, update juga kota dan kode pos
+    if (name === "address") {
+        const { extractedCity, extractedPostalCode } = parseAddress(value);
+        setFormData((prev) => ({
+            ...prev,
+            address: value,
+            city: extractedCity,
+            postalCode: extractedPostalCode,
+        }));
+    } else {
+        // Jika field lain, update seperti biasa
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
-
+  
+  // ++ PERUBAHAN 4: Fungsi validateForm ini diubah
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Nama harus diisi";
@@ -221,6 +247,9 @@ function Checkout({ cart, clearCart }) {
       newErrors.email = "Format email tidak valid";
     if (!formData.phone.trim()) newErrors.phone = "Nomor telepon harus diisi";
     if (!formData.address.trim()) newErrors.address = "Alamat harus diisi";
+    // Validasi tambahan
+    if (!formData.city.trim()) newErrors.city = "Kota harus diisi";
+    if (!formData.postalCode.trim()) newErrors.postalCode = "Kode pos harus diisi";
     return newErrors;
   };
 
@@ -238,7 +267,6 @@ function Checkout({ cart, clearCart }) {
       return;
     }
 
-    // Validasi cart sebelum submit
     const invalidItems = cart.filter((item) => {
       const quantity = parseInt(item.quantity);
       return isNaN(quantity) || quantity < 1;
@@ -271,14 +299,12 @@ function Checkout({ cart, clearCart }) {
       if (orderId) {
         setCompletedOrderId(orderId);
 
-        // Loop untuk menyimpan detail pesanan dengan validasi ketat
         console.log(
           `Pesanan utama dibuat dengan ID: ${orderId}. Menyimpan detail item...`
         );
 
         for (const item of cart) {
           try {
-            // Validasi data item sebelum dikirim
             const itemId = parseInt(item.id);
             const quantity = parseInt(item.quantity);
             const price = parseFloat(item.price) || 0;
@@ -287,7 +313,6 @@ function Checkout({ cart, clearCart }) {
             console.log("Original item:", item);
             console.log("Processed values:", { itemId, quantity, price });
 
-            // Validasi ulang
             if (isNaN(itemId) || itemId <= 0) {
               throw new Error(`ID obat tidak valid: ${item.id}`);
             }
@@ -304,30 +329,23 @@ function Checkout({ cart, clearCart }) {
               );
             }
 
-            const subtotal = price * quantity;
-
             const detailData = {
               pesanan_id: orderId,
               obat_id: itemId,
-              jumlah: quantity, // Pastikan ini adalah integer
+              jumlah: quantity,
             };
 
             console.log("Sending detail data:", detailData);
-
-            const detailResponse = await createOrderDetail(detailData);
-            console.log("Detail response:", detailResponse);
+            await createOrderDetail(detailData);
             console.log("================================");
           } catch (err) {
             console.error(
               `Gagal menyimpan detail untuk obat ${item.name} (ID: ${item.id}):`,
               err
             );
-            // Bisa memilih untuk melanjutkan atau menghentikan proses
-            // throw err; // Uncomment jika ingin menghentikan seluruh proses
           }
         }
 
-        // Loop untuk memperbarui stok
         console.log("Memulai proses update stok...");
         for (const item of cart) {
           try {
@@ -339,14 +357,9 @@ function Checkout({ cart, clearCart }) {
               continue;
             }
 
-            console.log(`Mengambil data lengkap untuk obat ID ${itemId}...`);
             const obatLengkap = await getObatById(itemId);
-
             const stokBaru = obatLengkap.stok - quantity;
-            console.log(
-              `Stok lama: ${obatLengkap.stok}, Quantity terjual: ${quantity}, Stok baru: ${stokBaru}`
-            );
-
+            
             if (stokBaru < 0) {
               console.warn(
                 `Stok akan menjadi negatif untuk obat ID ${itemId}. Melanjutkan...`
@@ -366,9 +379,6 @@ function Checkout({ cart, clearCart }) {
             };
 
             await updateObat(itemId, dataUntukUpdate);
-            console.log(
-              `Stok untuk obat ID ${itemId} berhasil diupdate menjadi ${stokBaru}`
-            );
           } catch (err) {
             console.error(
               `Error updating stock for item ${item.name}:`,
@@ -377,7 +387,6 @@ function Checkout({ cart, clearCart }) {
           }
         }
 
-        // Selesaikan proses checkout
         setIsOrderComplete(true);
         clearCart();
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -423,7 +432,6 @@ function Checkout({ cart, clearCart }) {
     );
   }
 
-  // --- JSX untuk render form (tidak ada perubahan signifikan) ---
   return (
     <div className="max-w-6xl mx-auto p-6 font-sans">
       <h1 className="text-3xl font-bold mb-6">Checkout</h1>
