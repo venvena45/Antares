@@ -91,34 +91,33 @@ const updateObat = async (id, data) => {
 
 // ++ PERUBAHAN 1: Tambahkan fungsi helper ini
 const parseAddress = (addressString) => {
-    if (!addressString) {
-      return { extractedCity: '', extractedPostalCode: '' };
+  if (!addressString) {
+    return { extractedCity: "", extractedPostalCode: "" };
+  }
+  const postalCodeMatch = addressString.match(/\b\d{5}\b/);
+  const extractedPostalCode = postalCodeMatch ? postalCodeMatch[0] : "";
+  let extractedCity = "";
+  const cityKeywords = ["Kota", "Kab.", "Kabupaten"];
+  const addressParts = addressString.split(/[\s,]+/);
+  for (let i = 0; i < addressParts.length; i++) {
+    if (cityKeywords.includes(addressParts[i]) && addressParts[i + 1]) {
+      extractedCity = addressParts[i + 1];
+      break;
     }
-    const postalCodeMatch = addressString.match(/\b\d{5}\b/);
-    const extractedPostalCode = postalCodeMatch ? postalCodeMatch[0] : '';
-    let extractedCity = '';
-    const cityKeywords = ['Kota', 'Kab.', 'Kabupaten'];
-    const addressParts = addressString.split(/[\s,]+/);
-    for (let i = 0; i < addressParts.length; i++) {
-      if (cityKeywords.includes(addressParts[i]) && addressParts[i + 1]) {
-        extractedCity = addressParts[i + 1];
-        break;
-      }
+  }
+  if (!extractedCity && extractedPostalCode) {
+    const postalCodeIndex = addressString.lastIndexOf(extractedPostalCode);
+    if (postalCodeIndex > 0) {
+      const relevantPart = addressString.substring(0, postalCodeIndex).trim();
+      const parts = relevantPart.split(/[\s,]+/);
+      extractedCity = parts.pop() || "";
     }
-    if (!extractedCity && extractedPostalCode) {
-      const postalCodeIndex = addressString.lastIndexOf(extractedPostalCode);
-      if (postalCodeIndex > 0) {
-        const relevantPart = addressString.substring(0, postalCodeIndex).trim();
-        const parts = relevantPart.split(/[\s,]+/);
-        extractedCity = parts.pop() || '';
-      }
-    }
-    if (extractedCity) {
-      extractedCity = extractedCity.replace(/,/g, '');
-    }
-    return { extractedCity, extractedPostalCode };
+  }
+  if (extractedCity) {
+    extractedCity = extractedCity.replace(/,/g, "");
+  }
+  return { extractedCity, extractedPostalCode };
 };
-
 
 function Checkout({ cart, clearCart }) {
   const navigate = useNavigate();
@@ -137,6 +136,7 @@ function Checkout({ cart, clearCart }) {
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState(null);
 
   const shippingFee = 10000;
 
@@ -182,7 +182,7 @@ function Checkout({ cart, clearCart }) {
       // Parsing alamat dari data yang dimuat
       const fullAddress = finalUserObject.alamat || "";
       const { extractedCity, extractedPostalCode } = parseAddress(fullAddress);
-      
+
       setFormData((prev) => ({
         ...prev,
         name: finalUserObject.nama || "",
@@ -200,10 +200,10 @@ function Checkout({ cart, clearCart }) {
   }, [navigate]);
 
   useEffect(() => {
-    if (cart.length === 0 && !isOrderComplete) {
+    if (cart.length === 0 && !isOrderComplete && !paymentUrl) {
       navigate("/cart");
     }
-  }, [cart, isOrderComplete, navigate]);
+  }, [cart, isOrderComplete, paymentUrl, navigate]);
 
   const totalPrice = cart.reduce((total, item) => {
     const price = parseFloat(item.price) || 0;
@@ -218,26 +218,26 @@ function Checkout({ cart, clearCart }) {
   // ++ PERUBAHAN 3: Fungsi handleChange ini diubah
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Jika field alamat yang berubah, update juga kota dan kode pos
     if (name === "address") {
-        const { extractedCity, extractedPostalCode } = parseAddress(value);
-        setFormData((prev) => ({
-            ...prev,
-            address: value,
-            city: extractedCity,
-            postalCode: extractedPostalCode,
-        }));
+      const { extractedCity, extractedPostalCode } = parseAddress(value);
+      setFormData((prev) => ({
+        ...prev,
+        address: value,
+        city: extractedCity,
+        postalCode: extractedPostalCode,
+      }));
     } else {
-        // Jika field lain, update seperti biasa
-        setFormData((prev) => ({ ...prev, [name]: value }));
+      // Jika field lain, update seperti biasa
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
-  
+
   // ++ PERUBAHAN 4: Fungsi validateForm ini diubah
   const validateForm = () => {
     const newErrors = {};
@@ -249,7 +249,8 @@ function Checkout({ cart, clearCart }) {
     if (!formData.address.trim()) newErrors.address = "Alamat harus diisi";
     // Validasi tambahan
     if (!formData.city.trim()) newErrors.city = "Kota harus diisi";
-    if (!formData.postalCode.trim()) newErrors.postalCode = "Kode pos harus diisi";
+    if (!formData.postalCode.trim())
+      newErrors.postalCode = "Kode pos harus diisi";
     return newErrors;
   };
 
@@ -359,7 +360,7 @@ function Checkout({ cart, clearCart }) {
 
             const obatLengkap = await getObatById(itemId);
             const stokBaru = obatLengkap.stok - quantity;
-            
+
             if (stokBaru < 0) {
               console.warn(
                 `Stok akan menjadi negatif untuk obat ID ${itemId}. Melanjutkan...`
@@ -387,12 +388,60 @@ function Checkout({ cart, clearCart }) {
           }
         }
 
-        setIsOrderComplete(true);
-        clearCart();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        setTimeout(() => {
-          navigate("/");
-        }, 5000);
+        console.log("Memanggil API pembayaran...");
+
+        const paymentData = {
+          orderId: `INV-${new Date()
+            .toISOString()
+            .split("T")[0]
+            .replace(/-/g, "")}-${orderId}`,
+          grossAmount: totalWithShipping,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+        };
+
+        console.log("Payload pembayaran:", paymentData);
+
+        const paymentResponse = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/pembayaran`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(paymentData),
+          }
+        );
+
+        if (!paymentResponse.ok) {
+          const errorText = await paymentResponse.text();
+          throw new Error(
+            `Gagal memproses pembayaran: ${paymentResponse.status} - ${errorText}`
+          );
+        }
+
+        const paymentResult = await paymentResponse.json();
+        console.log("Hasil respon pembayaran:", paymentResult);
+
+        // --- Tambahkan cek redirectUrl dari API ---
+        if (paymentResult.redirect_url) {
+          setPaymentUrl(paymentResult.redirect_url);
+
+          // TUNDA clearCart dan navigate
+          // Tunggu user selesai di modal
+        } else {
+          alert(
+            "Pesanan berhasil, tetapi tidak ada link pembayaran ditemukan."
+          );
+
+          // Kalau redirect_url TIDAK ADA, tetap anggap order selesai.
+          setIsOrderComplete(true);
+          clearCart();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          setTimeout(() => {
+            navigate("/");
+          }, 5000);
+        }
       } else {
         throw new Error(
           `Respons dari API pesanan tidak berisi ID yang valid. Respons: ${JSON.stringify(
@@ -664,6 +713,196 @@ function Checkout({ cart, clearCart }) {
           </div>
         </div>
       </div>
+      {paymentUrl && (
+        <div className="fixed inset-0 backdrop-blur-md bg-white/30 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-4xl relative shadow-2xl animate-fadeIn">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-t-2xl">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    💳 Pembayaran Pesanan
+                  </h2>
+                  <p className="text-blue-100 text-sm">
+                    Selesaikan pembayaran untuk melanjutkan pesanan Anda
+                  </p>
+                </div>
+                <button
+                  className="text-white hover:text-gray-200 transition-colors duration-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20"
+                  onClick={() => {
+                    setPaymentUrl(null);
+                    setIsOrderComplete(true);
+                    clearCart();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    setTimeout(() => navigate("/"), 5000);
+                  }}
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Payment Frame */}
+            <div className="p-6">
+              <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="flex items-center space-x-2 text-gray-600">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      Transaksi Aman & Terpercaya
+                    </span>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <iframe
+                    src={paymentUrl}
+                    className="w-full h-[500px] border-0 rounded-lg shadow-inner bg-white"
+                    title="Pembayaran"
+                  ></iframe>
+
+                  {/* Loading overlay jika diperlukan */}
+                  <div
+                    className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg hidden"
+                    id="loading-overlay"
+                  >
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      <p className="text-gray-600 text-sm">
+                        Memuat pembayaran...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
+                <div className="flex items-center text-gray-500 text-sm">
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span>
+                    Halaman akan otomatis tertutup setelah pembayaran selesai
+                  </span>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setPaymentUrl(null);
+                    }}
+                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setPaymentUrl(null);
+                      setIsOrderComplete(true);
+                      clearCart();
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      setTimeout(() => navigate("/"), 5000);
+                    }}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    ✅ Selesai Bayar & Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Security Badge */}
+            <div className="bg-gray-50 px-6 py-4 rounded-b-2xl">
+              <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
+                <div className="flex items-center">
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                  <span>SSL Encrypted</span>
+                </div>
+                <div className="flex items-center">
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                  <span>Secure Payment</span>
+                </div>
+                <div className="flex items-center">
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                  <span>PCI Compliant</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
