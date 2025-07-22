@@ -1,11 +1,11 @@
-import React from 'react';
-import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
+import React from "react";
+import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 
 function Footer() {
   return (
     <footer
       className="mt-10 px-5 py-10"
-      style={{ backgroundColor: '#309898', color: '#ffffff' }}
+      style={{ backgroundColor: "#309898", color: "#ffffff" }}
     >
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-8">
         {/* Kiri - Kontak */}
@@ -13,7 +13,7 @@ function Footer() {
           <h3 className="text-xl mb-4 font-semibold">Kontak</h3>
           <ul className="space-y-3">
             <li className="flex items-center gap-3">
-              <FaPhoneAlt /> +62 123 456 7890
+              <FaPhoneAlt /> +62 853 8112 8438
             </li>
             <li className="flex items-center gap-3">
               <FaEnvelope /> info@apoteksehat.com
@@ -32,8 +32,19 @@ function Footer() {
         </div>
       </div>
 
-      <div className="text-center mt-8 pt-6 border-t border-white/30">
-        <p>&copy; {new Date().getFullYear()} Apotek Antares. All Rights Reserved.</p>
+      <div className="text-center mt-8 pt-6 border-t border-white/30 space-y-2">
+        <p>
+          &copy; {new Date().getFullYear()} Apotek Antares. All Rights Reserved.
+        </p>
+        {/* Tambahan Kebijakan Pengembalian Dana */}
+        <p>
+          <a
+            href="/kebijakan-pengembalian-dana"
+            className="underline hover:text-gray-200"
+          >
+            Kebijakan Pengembalian Dana
+          </a>
+        </p>
       </div>
     </footer>
   );
