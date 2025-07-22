@@ -129,7 +129,6 @@ function Checkout({ cart, clearCart }) {
     address: "",
     city: "",
     postalCode: "",
-    paymentMethod: "transfer",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
