@@ -15,11 +15,11 @@ function Footer() {
             <li className="flex items-center gap-3">
               <FaPhoneAlt /> +62 853 8112 8438
             </li>
-            <li className="flex items-center gap-3">
+            {/* <li className="flex items-center gap-3">
               <FaEnvelope /> info@apoteksehat.com
-            </li>
+            </li> */}
             <li className="flex items-center gap-3">
-              <FaMapMarkerAlt /> Jl. Kesehatan No. 123, Jakarta
+              <FaMapMarkerAlt /> Jl. Pringadi No.128, RT.001, Pringsewu Utara, Kec. Pringsewu, Kabupaten Pringsewu, Lampung 35373
             </li>
           </ul>
         </div>

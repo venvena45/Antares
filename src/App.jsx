@@ -12,7 +12,8 @@ import HeaderRegistrasi from "./components/HeaderRegistrasi";
 import HeaderHome from "./components/HeaderHome";
 import Footer from "./components/Footer";
 import LoginAlert from "./components/LoginAlert";
-import DraggableWhatsAppButton from './components/DraggableWhatsAppButton'; // <-- SUDAH BENAR DIIMPOR
+import DraggableWhatsAppButton from "./components/DraggableWhatsAppButton"; // <-- SUDAH BENAR DIIMPOR
+import KebijakanPengembalianDana from "./pages/KebijakanPengembalianDana";
 
 import RiwayatPesanan from "./pages/RiwayatPesanan";
 import Home from "./pages/Home";
@@ -79,23 +80,22 @@ function App({ pathname, user, login, logout, setUser }) {
   const clearCart = () => {
     setCart([]);
   };
-  
+
   // Perbaikan kecil: Ganti "/home" menjadi "/" agar sesuai dengan Route
   let header;
   if (pathname === "/login") {
-  header = <HeaderLogin />;
-} else if (pathname === "/register") {
-  header = <HeaderRegistrasi />;
-} else {
-  header = (
-    <Navbar
-      cartItemCount={cart.reduce((total, item) => total + item.quantity, 0)}
-      user={user}
-      onLogout={logout}
-    />
-  );
-}
-
+    header = <HeaderLogin />;
+  } else if (pathname === "/register") {
+    header = <HeaderRegistrasi />;
+  } else {
+    header = (
+      <Navbar
+        cartItemCount={cart.reduce((total, item) => total + item.quantity, 0)}
+        user={user}
+        onLogout={logout}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 text-gray-800">
@@ -143,10 +143,14 @@ function App({ pathname, user, login, logout, setUser }) {
               />
             }
           />
+          <Route
+            path="/kebijakan-pengembalian-dana"
+            element={<KebijakanPengembalianDana />}
+          />
         </Routes>
       </main>
       <Footer />
-      
+
       {/* PANGGIL KOMPONEN DI SINI */}
       <DraggableWhatsAppButton />
     </div>
