@@ -49,10 +49,10 @@ function KebijakanPengembalianDana() {
         <li>
           Hubungi layanan pelanggan kami di{" "}
           <a
-            href="mailto:info@apoteksehat.com"
+            href="mailto:tanya.antares19@gmail.com"
             className="text-teal-600 underline"
           >
-            info@apoteksehat.com
+            tanya.antares19@gmail.com
           </a>{" "}
           atau WhatsApp ke{" "}
           <span className="font-medium">+62 853 8112 8438</span>.

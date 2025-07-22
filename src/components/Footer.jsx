@@ -19,7 +19,8 @@ function Footer() {
               <FaEnvelope /> info@apoteksehat.com
             </li> */}
             <li className="flex items-center gap-3">
-              <FaMapMarkerAlt /> Jl. Pringadi No.128, RT.001, Pringsewu Utara, Kec. Pringsewu, Kabupaten Pringsewu, Lampung 35373
+              <FaMapMarkerAlt /> Jl. Pringadi No.128, RT.001, Pringsewu Utara,
+              Kec. Pringsewu, Kabupaten Pringsewu, Lampung 35373
             </li>
           </ul>
         </div>
