@@ -630,31 +630,6 @@ function Checkout({ cart, clearCart }) {
                 )}
               </div>
             </div>
-            <h2 className="text-xl font-semibold mt-6 mb-2">
-              Metode Pembayaran
-            </h2>
-            <div className="space-y-2">
-              {[
-                { id: "transfer", label: "Transfer Bank" },
-                { id: "cod", label: "Bayar di Tempat (COD)" },
-                { id: "ewallet", label: "E-Wallet" },
-              ].map(({ id, label }) => (
-                <div key={id} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={id}
-                    name="paymentMethod"
-                    value={id}
-                    checked={formData.paymentMethod === id}
-                    onChange={handleChange}
-                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <label htmlFor={id} className="text-gray-700">
-                    {label}
-                  </label>
-                </div>
-              ))}
-            </div>
             <button
               type="submit"
               disabled={isSubmitting}
