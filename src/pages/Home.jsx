@@ -70,32 +70,29 @@ function Home() {
     setSelectedCategory(null);
   };
 
-  // Bagi produk dalam grup 3 item
   const groupedProducts = [];
   for (let i = 0; i < featuredProducts.length; i += 3) {
     groupedProducts.push(featuredProducts.slice(i, i + 3));
   }
 
-  // Slideshow otomatis
   useEffect(() => {
     if (groupedProducts.length === 0) return;
 
     const interval = setInterval(() => {
-      setFadeGroup(false); // Fade out
-
+      setFadeGroup(false);
       setTimeout(() => {
         setCurrentGroupIndex((prevIndex) =>
           (prevIndex + 1) % groupedProducts.length
         );
-        setFadeGroup(true); // Fade in
-      }, 300); // delay sebelum fade in
-    }, 4000); // setiap 4 detik
+        setFadeGroup(true);
+      }, 300);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [groupedProducts]);
 
   return (
-    <div className="px-4 py-10 max-w-7xl mx-auto">
+    <div className="w-full px-4 py-10 max-w-7xl mx-auto">
       {/* Hero Section */}
       <div className="text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Selamat Datang di Apotek Antares</h1>
@@ -112,13 +109,11 @@ function Home() {
           <h3 className="text-xl font-semibold mb-2">Produk Berkualitas</h3>
           <p className="text-gray-600">Semua obat dan produk kesehatan kami terjamin kualitasnya</p>
         </div>
-      <a href="https://wa.me/6285381128438" target="_blank" rel="noopener noreferrer" className="block text-center bg-white shadow-lg p-6 rounded-xl hover:bg-gray-50 transition-colors duration-200">
-        <div className="text-center">
+        <a href="https://wa.me/6285381128438" target="_blank" rel="noopener noreferrer" className="block text-center bg-white shadow-lg p-6 rounded-xl hover:bg-gray-50 transition-colors duration-200">
           <FaStethoscope className="text-[#F4631E] text-4xl mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Konsultasi Gratis</h3>
           <p className="text-gray-600">Konsultasikan kebutuhan kesehatan Anda dengan apoteker kami</p>
-        </div>
-      </a>
+        </a>
         <div className="text-center bg-white shadow-lg p-6 rounded-xl">
           <FaTruck className="text-[#F4631E] text-4xl mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">Pengiriman Cepat</h3>
@@ -137,9 +132,7 @@ function Home() {
               onClick={() => handleCategoryClick(category)}
             >
               <h3 className="text-xl font-semibold mb-2">{category.name}</h3>
-              <button className="text-blue-600 hover:underline">
-                Lihat Semua
-              </button>
+              <button className="text-blue-600 hover:underline">Lihat Semua</button>
             </div>
           ))}
         </div>
@@ -163,7 +156,7 @@ function Home() {
             <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-6">
               {filteredProducts.map(product => (
                 <div key={product.id} className="bg-white shadow-md rounded-xl overflow-hidden">
-                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                  <div className="h-48 bg-gray-200 flex items-center justify-center overflow-hidden rounded-t-xl">
                     <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
                   </div>
                   <div className="p-4">
@@ -187,22 +180,23 @@ function Home() {
         </div>
       )}
 
-      {/* Produk Terlaris - Fade Slider */}
-      {!selectedCategory && featuredProducts.length > 0 && (
-        <div className="mb-16 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Produk Terlaris</h2>
+    {/* Produk Terlaris */}
+    {!selectedCategory && featuredProducts.length > 0 && (
+      <div className="mb-16 text-center">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Produk Terlaris</h2>
 
-          <div className="relative w-full mx-auto min-h-[420px]">
+        <div className="w-full mx-auto">
+          {groupedProducts.map((group, index) => (
             <div
-              key={currentGroupIndex}
-              className={`absolute inset-0 transition-opacity duration-500 ${
-                fadeGroup ? 'opacity-100' : 'opacity-0'
+              key={index}
+              className={`transition-opacity duration-500 ease-in-out ${
+                index === currentGroupIndex ? 'opacity-100 block' : 'opacity-0 hidden'
               }`}
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-4">
-                {groupedProducts[currentGroupIndex].map(product => (
+                {group.map(product => (
                   <div key={product.id} className="bg-white shadow-md rounded-xl overflow-hidden">
-                    <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    <div className="h-48 bg-gray-200 flex items-center justify-center overflow-hidden rounded-t-xl">
                       <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
                     </div>
                     <div className="p-4">
@@ -219,9 +213,11 @@ function Home() {
                 ))}
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      )}
+      </div>
+    )}
+
     </div>
   );
 }

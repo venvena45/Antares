@@ -322,3 +322,39 @@ export const getDetailPesananById = async (pesananId) => {
   return await res.json();
 };
 
+export const batalkanPesananById = async (pesanan) => {
+  const token = localStorage.getItem("token");
+
+  // Konversi tanggal_pesan ke format MySQL yang valid (YYYY-MM-DD HH:mm:ss)
+  const formatMySQLDate = (dateString) => {
+    const date = new Date(dateString);
+    const pad = (n) => n.toString().padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  };
+
+  const fixedPesanan = {
+    ...pesanan,
+    status_pesanan: "dibatalkan",
+    tanggal_pesan: formatMySQLDate(pesanan.tanggal_pesan),
+  };
+
+  const response = await fetch(`${API_BASE_URL}/pesanan/${pesanan.pesanan_id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(fixedPesanan),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Gagal membatalkan pesanan: ${errorText}`);
+  }
+
+  return await response.json();
+};
+
+
+
+

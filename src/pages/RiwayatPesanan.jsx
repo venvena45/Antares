@@ -3,6 +3,7 @@ import {
   getPesananByUserId,
   getDetailPesananById,
   getObatById,
+  batalkanPesananById,
 } from "../services/api";
 
 function RiwayatPesanan() {
@@ -38,7 +39,7 @@ function RiwayatPesanan() {
                         ...item,
                         Obat: {
                           ...obat,
-                          gambar: obat.foto, 
+                          gambar: obat.foto,
                         },
                       };
                     } catch {
@@ -48,7 +49,6 @@ function RiwayatPesanan() {
                   return item;
                 })
               );
-
 
               return { ...pesanan, DetailPesanans: detailWithObat };
             } catch {
@@ -70,13 +70,49 @@ function RiwayatPesanan() {
     fetchData();
   }, [userId]);
 
+  const handleCancel = async (pesananId) => {
+    const konfirmasi = window.confirm("Yakin ingin membatalkan pesanan ini?");
+    if (!konfirmasi) return;
+
+    try {
+      const pesanan = daftarPesanan.find(p => p.pesanan_id === pesananId);
+      if (!pesanan) throw new Error("Pesanan tidak ditemukan");
+
+      await batalkanPesananById(pesanan);
+      setDaftarPesanan((prev) =>
+        prev.map((p) =>
+          p.pesanan_id === pesananId
+            ? { ...p, status_pesanan: "dibatalkan" }
+            : p
+        )
+      );
+      alert("Pesanan berhasil dibatalkan.");
+    } catch (err) {
+      console.error(err);
+      alert(`Gagal membatalkan pesanan: ${err.message}`);
+    }
+  };
+
+  const handleDelete = async (pesananId) => {
+    const konfirmasi = window.confirm("Yakin ingin menghapus pesanan ini secara permanen?");
+    if (!konfirmasi) return;
+
+    try {
+      await hapusPesananById(pesananId);
+      setDaftarPesanan((prev) => prev.filter((p) => p.pesanan_id !== pesananId));
+      alert("Pesanan berhasil dihapus.");
+    } catch (err) {
+      console.error(err);
+      alert(`Gagal menghapus pesanan: ${err.message}`);
+    }
+  };
+
   const formatDate = (dateString) => {
-    const options = {
+    return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    };
-    return new Date(dateString).toLocaleDateString("id-ID", options);
+    });
   };
 
   const filterByStatus = (status) => {
@@ -87,12 +123,14 @@ function RiwayatPesanan() {
     diproses: "Diproses",
     dikirim: "Dikirim",
     selesai: "Selesai",
+    dibatalkan: "Dibatalkan", // <--- Tambahkan ini
   };
 
   const statusColors = {
     diproses: "bg-yellow-100 text-yellow-800",
     dikirim: "bg-blue-100 text-blue-800",
     selesai: "bg-green-100 text-green-800",
+    dibatalkan: "bg-red-100 text-red-800", // <--- Tambahkan ini
   };
 
   if (loading) return <p className="text-center mt-8">Memuat riwayat...</p>;
@@ -163,21 +201,18 @@ function RiwayatPesanan() {
                       pesanan.DetailPesanans.map((item) => (
                         <tr key={item.detail_pesanan_id} className="hover:bg-gray-50 transition">
                           <td className="px-6 py-3">
-                              {item.Obat?.gambar ? (
-                                <div className="relative w-16 h-16">
-                                  <img
-                                    src={item.Obat.gambar}
-                                    alt={item.Obat.nama_obat}
-                                    className="w-full h-full object-cover rounded-xl shadow-md border border-gray-300 hover:scale-105 hover:shadow-lg transition-transform duration-300 ease-in-out"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="w-16 h-16 flex items-center justify-center bg-gray-100 text-gray-400 rounded-xl border">
-                                  <span className="text-xs text-center">Tidak ada gambar</span>
-                                </div>
-                              )}
-                            </td>
-
+                            {item.Obat?.gambar ? (
+                              <img
+                                src={item.Obat.gambar}
+                                alt={item.Obat.nama_obat}
+                                className="w-16 h-16 object-cover rounded-xl border"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-gray-100 flex items-center justify-center text-xs text-gray-400 rounded-xl border">
+                                Tidak ada gambar
+                              </div>
+                            )}
+                          </td>
                           <td className="px-6 py-3">{item.Obat?.nama_obat || "Tidak tersedia"}</td>
                           <td className="px-6 py-3 text-center">{item.jumlah}</td>
                           <td className="px-6 py-3 text-right">
@@ -199,13 +234,23 @@ function RiwayatPesanan() {
                 </table>
               </div>
 
-              <div className="mt-3 flex flex-col items-end">
-                <p className="text-sm text-gray-500 mb-1">
-                  Termasuk biaya kirim sebesar Rp 10.000
-                </p>
-                <p className="font-bold text-lg text-gray-900">
-                  Total Pesanan: Rp {Number(pesanan.total_harga).toLocaleString("id-ID")}
-                </p>
+              <div className="mt-3 flex flex-col sm:flex-row sm:justify-between items-end gap-2">
+                {pesanan.status_pesanan === "diproses" && (
+                  <button
+                    onClick={() => handleCancel(pesanan.pesanan_id)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                  >
+                    Batalkan Pesanan
+                  </button>
+                )}
+                <div className="text-right">
+                  <p className="text-sm text-gray-500 mb-1">
+                    Termasuk biaya kirim sebesar Rp 10.000
+                  </p>
+                  <p className="font-bold text-lg text-gray-900">
+                    Total Pesanan: Rp {Number(pesanan.total_harga).toLocaleString("id-ID")}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
