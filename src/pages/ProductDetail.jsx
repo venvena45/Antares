@@ -17,7 +17,7 @@ const FaCartPlus = () => (
 
 // Ambil data obat dari API
 const getMedicineById = async (id) => {
-  const res = await fetch(`https://antaresapi-production-006d.up.railway.app/api/obat/${id}`);
+  const res = await fetch(`https://apotekantares.my.id/api/obat/${id}`);
   if (!res.ok) throw new Error("Gagal ambil data obat");
   const data = await res.json();
   return {
