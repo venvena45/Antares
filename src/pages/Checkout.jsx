@@ -30,7 +30,7 @@ const FaEdit = () => (
 );
 
 // --- Konstanta API (Tidak berubah) ---
-const API_BASE_URL = "https://antaresapi-production-006d.up.railway.app/api";
+const API_BASE_URL = "https://apotekantares.my.id/api";
 
 // --- Fungsi-fungsi API dengan Penanganan Error (Tidak berubah) ---
 const createOrder = async (orderData) => {
