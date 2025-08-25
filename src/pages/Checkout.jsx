@@ -47,20 +47,15 @@ const createOrder = async (orderData) => {
 };
 
 const createOrderDetail = async (detailData) => {
-  console.log(
-    "🟨 Request ke /detail-pesanan/:",
-    JSON.stringify(detailData, null, 2)
-  );
-  const response = await fetch(`${API_BASE_URL}/detail-pesanan/`, {
+  console.log("🟨 Request ke /detail-pesanan:", JSON.stringify(detailData, null, 2));
+  const response = await fetch(`${API_BASE_URL}/detail-pesanan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(detailData),
   });
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(
-      `Gagal menyimpan detail pesanan. Status: ${response.status}, Pesan: ${errorText}`
-    );
+    throw new Error(`Gagal menyimpan detail pesanan. Status: ${response.status}, Pesan: ${errorText}`);
   }
   return await response.json();
 };
@@ -286,9 +281,7 @@ function Checkout({ cart, clearCart }) {
       pelanggan_id: userData.id,
       tanggal_pesan: new Date().toISOString().split("T")[0],
       total_harga: totalWithShipping,
-      status_pesanan: "diproses",
-      metode_pembayaran: formData.paymentMethod,
-      alamat_pengiriman: `${formData.address}, ${formData.city}, ${formData.postalCode}`,
+      status_pesanan: "diproses"
     };
 
     try {
@@ -308,6 +301,7 @@ function Checkout({ cart, clearCart }) {
             const itemId = parseInt(item.id);
             const quantity = parseInt(item.quantity);
             const price = parseFloat(item.price) || 0;
+            const totalItemPrice = price * quantity;
 
             console.log("=== PROCESSING ITEM DETAIL ===");
             console.log("Original item:", item);
@@ -330,9 +324,11 @@ function Checkout({ cart, clearCart }) {
             }
 
             const detailData = {
-              pesanan_id: orderId,
-              obat_id: itemId,
-              jumlah: quantity,
+              pesanan_id: orderId,                     // gunakan ID pesanan utama
+  obat_id: item.id,                        // ID obat
+  total_harga: (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0),
+  status_pesanan: "pending",
+  metode_pembayaran: formData.metode_pembayaran || "transfer", // default: transfer
             };
 
             console.log("Sending detail data:", detailData);

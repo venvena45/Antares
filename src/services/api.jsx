@@ -227,7 +227,7 @@ export const updateObat = async (id, data) => {
     console.log("📦 Data yang dikirim:", JSON.stringify(data, null, 2));
 
     const response = await fetch(
-      `https://antaresapi-production-006d.up.railway.app/api/obat/${id}`,
+      `https://apotekantares.my.id/api/obat/${id}`,
 
       {
         method: "PUT",
@@ -282,7 +282,7 @@ export const updateObat = async (id, data) => {
 
 export const getObatById = async (id) => {
   const response = await fetch(
-    `https://antaresapi-production-006d.up.railway.app/api/obat/${id}`
+    `https://apotekantares.my.id/api/obat/${id}`
   );
 
   if (!response.ok) throw new Error("Gagal ambil detail obat");
@@ -312,7 +312,7 @@ export const getPesananByUserId = async (userId) => {
 
 export const getDetailPesananById = async (pesananId) => {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_BASE_URL}/detail-pesanan/pesanan/${pesananId}`, {
+  const res = await fetch(`${API_BASE_URL}/detail-pesanan/pesanan${pesananId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
