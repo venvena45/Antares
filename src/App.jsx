@@ -12,7 +12,7 @@ import HeaderRegistrasi from "./components/HeaderRegistrasi";
 import HeaderHome from "./components/HeaderHome";
 import Footer from "./components/Footer";
 import LoginAlert from "./components/LoginAlert";
-import DraggableWhatsAppButton from "./components/DraggableWhatsAppButton"; // <-- SUDAH BENAR DIIMPOR
+import DraggableWhatsAppButton from "./components/DraggableWhatsAppButton"; 
 import KebijakanPengembalianDana from "./pages/KebijakanPengembalianDana";
 
 import RiwayatPesanan from "./pages/RiwayatPesanan";
