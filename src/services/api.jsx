@@ -312,7 +312,7 @@ export const getPesananByUserId = async (userId) => {
 
 export const getDetailPesananById = async (pesananId) => {
   const token = localStorage.getItem("token");
-  const res = await fetch(`${API_BASE_URL}/detail-pesanan/pesanan${pesananId}`, {
+  const res = await fetch(`${API_BASE_URL}/detail-pesanan/${pesananId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
