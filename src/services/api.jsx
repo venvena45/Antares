@@ -310,17 +310,35 @@ export const getPesananByUserId = async (userId) => {
   return allPesanan.filter((p) => p.pelanggan_id == userId);
 };
 
+// services/api.jsx
 export const getDetailPesananById = async (pesananId) => {
   const token = localStorage.getItem("token");
   const res = await fetch(`${API_BASE_URL}/detail-pesanan/${pesananId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
 
-  if (!res.ok) throw new Error("Gagal ambil detail");
-  return await res.json();
+  if (!res.ok) {
+    const errMsg = await res.text();
+    throw new Error(`Gagal ambil detail pesanan ${pesananId}: ${errMsg}`);
+  }
+
+  const data = await res.json();
+
+  // Bungkus object jadi array supaya bisa .map()
+  const detailArray = Array.isArray(data) ? data : [data];
+
+  // Tambahkan properti default agar tidak undefined di komponen
+  return detailArray.map((d, idx) => ({
+    detail_pesanan_id: d.detail_id || idx, // fallback pakai index
+    pesanan_id: d.pesanan_id,
+    obat_id: d.obat_id,
+    jumlah: d.jumlah || 1, // kalau backend belum ada field jumlah → default 1
+    total_harga: d.total_harga,
+    status_pesanan: d.status_pesanan,
+    metode_pembayaran: d.metode_pembayaran,
+  }));
 };
+
 
 export const batalkanPesananById = async (pesanan) => {
   const token = localStorage.getItem("token");

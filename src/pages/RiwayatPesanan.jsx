@@ -31,24 +31,26 @@ function RiwayatPesanan() {
               const detail = await getDetailPesananById(pesanan.pesanan_id);
 
               const detailWithObat = await Promise.all(
-                detail.map(async (item) => {
-                  if (!item.Obat && item.obat_id) {
-                    try {
-                      const obat = await getObatById(item.obat_id);
-                      return {
-                        ...item,
-                        Obat: {
-                          ...obat,
-                          gambar: obat.foto,
-                        },
-                      };
-                    } catch {
-                      return item;
-                    }
-                  }
-                  return item;
-                })
-              );
+  detail.map(async (item) => {
+    if (!item.Obat && item.obat_id) {
+      try {
+        const obat = await getObatById(item.obat_id);
+        return {
+          ...item,
+          Obat: {
+            ...obat,
+            gambar: obat.foto,
+            harga_satuan: obat.harga_satuan, // pastikan ada harga satuan
+          },
+        };
+      } catch {
+        return item;
+      }
+    }
+    return item;
+  })
+);
+
 
               return { ...pesanan, DetailPesanans: detailWithObat };
             } catch {
